@@ -1,94 +1,139 @@
 #!/bin/bash
 
 # ============================================
-# 🤖 INSTALADOR - OrangePi IA Bot
-# Simples, direto e funcional!
+# 🤖 OrangePi 6 Plus - CONTROLE TOTAL
+# Instalador Completo
 # ============================================
 
 set -e
 
 # Cores
+RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
-RED='\033[0;31m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
 clear
-echo -e "${BLUE}"
-echo "╔════════════════════════════════════════════════════════╗"
-echo "║  🤖 Instalador - OrangePi IA Bot                       ║"
-echo "║     Telegram + Ollama + Controle Total                 ║"
-echo "╚════════════════════════════════════════════════════════╝"
+echo -e "${CYAN}"
+echo "╔════════════════════════════════════════════════════════════╗"
+echo "║                                                            ║"
+echo "║   🤖 OrangePi 6 Plus - CONTROLE TOTAL                      ║"
+echo "║                                                            ║"
+echo "║   Telegram + Ollama + GPIO + Docker + Automação            ║"
+echo "║                                                            ║"
+echo "╚════════════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
 # ============================================
-# CONFIGURAÇÕES
+# CONFIGURAÇÕES - EDITE AQUI SE NECESSÁRIO
 # ============================================
 
-TELEGRAM_TOKEN="${TELEGRAM_TOKEN:-8342604056:AAGgB6WDFzD_nciqyI-By2ux8bN2mT5Jahs}"
-ALLOWED_USERS="${ALLOWED_USERS:-5075455416}"
+TELEGRAM_TOKEN="${TELEGRAM_TOKEN:-SEU_TOKEN_AQUI}"
+ALLOWED_USERS="${ALLOWED_USERS:-SEU_CHAT_ID_AQUI}"
 OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.1:8b}"
-INSTALL_DIR="$HOME/orangepi-ia-bot"
+INSTALL_DIR="$HOME/orangepi-bot"
 REPO_URL="https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/bot"
 
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${YELLOW}Configurações:${NC}"
-echo -e "  📱 Telegram Token: ${TELEGRAM_TOKEN:0:20}..."
+echo -e "  📱 Token: ${TELEGRAM_TOKEN:0:20}..."
 echo -e "  👤 Usuários: $ALLOWED_USERS"
 echo -e "  🧠 Modelo: $OLLAMA_MODEL"
+echo -e "  📁 Diretório: $INSTALL_DIR"
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# ============================================
-# 1. DEPENDÊNCIAS
-# ============================================
-
-echo -e "${BLUE}[1/7]${NC} Atualizando sistema e instalando dependências..."
-sudo apt update
-sudo apt install -y curl wget git build-essential ca-certificates
-
-# Chromium para ARM (Orange Pi)
-if ! command -v chromium-browser &> /dev/null && ! command -v chromium &> /dev/null; then
-    echo -e "${BLUE}[1/7]${NC} Instalando Chromium..."
-    sudo apt install -y chromium-browser || sudo apt install -y chromium
+# Verificar se token foi configurado
+if [[ "$TELEGRAM_TOKEN" == "SEU_TOKEN_AQUI" ]]; then
+    echo -e "${RED}❌ ERRO: Configure o TELEGRAM_TOKEN antes de executar!${NC}"
+    echo ""
+    echo "Execute assim:"
+    echo -e "${GREEN}TELEGRAM_TOKEN=\"seu_token\" ALLOWED_USERS=\"seu_id\" bash install.sh${NC}"
+    echo ""
+    exit 1
 fi
+
+# ============================================
+# 1. ATUALIZAR SISTEMA
+# ============================================
+
+echo -e "${BLUE}[1/8]${NC} Atualizando sistema..."
+sudo apt update
+sudo apt upgrade -y
+
+echo -e "${GREEN}✅ Sistema atualizado${NC}"
+
+# ============================================
+# 2. DEPENDÊNCIAS
+# ============================================
+
+echo -e "${BLUE}[2/8]${NC} Instalando dependências..."
+
+sudo apt install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    htop \
+    net-tools \
+    wireless-tools \
+    network-manager \
+    chromium-browser || sudo apt install -y chromium
+
+# GPIO tools
+sudo apt install -y python3-gpiod gpiod || true
 
 echo -e "${GREEN}✅ Dependências instaladas${NC}"
 
 # ============================================
-# 2. NODE.JS 22
+# 3. NODE.JS 22
 # ============================================
 
-echo -e "${BLUE}[2/7]${NC} Verificando Node.js..."
+echo -e "${BLUE}[3/8]${NC} Instalando Node.js 22..."
 
 export NVM_DIR="$HOME/.nvm"
 
 if [ ! -d "$NVM_DIR" ]; then
-    echo -e "${BLUE}[2/7]${NC} Instalando NVM..."
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 fi
 
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 if ! command -v node &> /dev/null || [ "$(node -v | cut -d. -f1 | tr -d 'v')" -lt 20 ]; then
-    echo -e "${BLUE}[2/7]${NC} Instalando Node.js 22..."
     nvm install 22
     nvm use 22
     nvm alias default 22
 fi
 
-echo -e "${GREEN}✅ Node.js $(node -v)${NC}"
+# Adicionar ao bashrc se não existir
+if ! grep -q "NVM_DIR" ~/.bashrc; then
+    cat >> ~/.bashrc << 'BASHEOF'
+
+# NVM
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+BASHEOF
+fi
+
+echo -e "${GREEN}✅ Node.js $(node -v) instalado${NC}"
 
 # ============================================
-# 3. OLLAMA
+# 4. OLLAMA
 # ============================================
 
-echo -e "${BLUE}[3/7]${NC} Verificando Ollama..."
+echo -e "${BLUE}[4/8]${NC} Instalando Ollama..."
 
 if ! command -v ollama &> /dev/null; then
-    echo -e "${BLUE}[3/7]${NC} Instalando Ollama..."
     curl -fsSL https://ollama.com/install.sh | sh
 fi
 
+# Configurar serviço
 sudo systemctl enable ollama 2>/dev/null || true
 sudo systemctl start ollama 2>/dev/null || ollama serve &
 sleep 5
@@ -96,38 +141,44 @@ sleep 5
 echo -e "${GREEN}✅ Ollama instalado${NC}"
 
 # ============================================
-# 4. MODELO DE IA
+# 5. MODELO DE IA
 # ============================================
 
-echo -e "${BLUE}[4/7]${NC} Baixando modelo $OLLAMA_MODEL (pode demorar)..."
+echo -e "${BLUE}[5/8]${NC} Baixando modelo $OLLAMA_MODEL..."
+echo -e "${YELLOW}⏳ Isso pode demorar vários minutos...${NC}"
+
 ollama pull "$OLLAMA_MODEL"
 
 echo -e "${GREEN}✅ Modelo $OLLAMA_MODEL pronto${NC}"
 
 # ============================================
-# 5. BAIXAR BOT
+# 6. INSTALAR BOT
 # ============================================
 
-echo -e "${BLUE}[5/7]${NC} Baixando bot..."
+echo -e "${BLUE}[6/8]${NC} Instalando bot..."
 
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-# Baixar arquivos do GitHub
+# Baixar arquivos
 curl -fsSL "$REPO_URL/index.js" -o index.js
 curl -fsSL "$REPO_URL/package.json" -o package.json
 
-# Instalar dependências do Node
-echo -e "${BLUE}[5/7]${NC} Instalando dependências npm..."
+# Instalar dependências
 npm install --omit=dev
+
+# Criar diretórios necessários
+mkdir -p /home/backup 2>/dev/null || sudo mkdir -p /home/backup
+mkdir -p /home/scripts 2>/dev/null || sudo mkdir -p /home/scripts
+sudo chown $USER:$USER /home/backup /home/scripts 2>/dev/null || true
 
 echo -e "${GREEN}✅ Bot instalado em $INSTALL_DIR${NC}"
 
 # ============================================
-# 6. SERVIÇO SYSTEMD
+# 7. CONFIGURAR SYSTEMD
 # ============================================
 
-echo -e "${BLUE}[6/7]${NC} Criando serviço systemd..."
+echo -e "${BLUE}[7/8]${NC} Configurando serviço systemd..."
 
 NODE_PATH="$(dirname "$(which node)")"
 
@@ -135,9 +186,10 @@ NODE_PATH="$(dirname "$(which node)")"
 CHROMIUM_PATH="/usr/bin/chromium-browser"
 [ -f "/usr/bin/chromium" ] && CHROMIUM_PATH="/usr/bin/chromium"
 
+# Criar serviço
 sudo tee /etc/systemd/system/orangepi-bot.service > /dev/null <<EOF
 [Unit]
-Description=OrangePi IA Telegram Bot
+Description=OrangePi 6 Plus - Bot IA com Controle Total
 After=network.target ollama.service
 Wants=ollama.service
 
@@ -164,26 +216,37 @@ StandardError=journal
 WantedBy=multi-user.target
 EOF
 
+# Configurar sudoers para comandos de energia sem senha
+echo -e "${BLUE}[7/8]${NC} Configurando permissões sudo..."
+sudo tee /etc/sudoers.d/orangepi-bot > /dev/null <<EOF
+# Permitir comandos de energia sem senha para o bot
+$USER ALL=(ALL) NOPASSWD: /sbin/shutdown
+$USER ALL=(ALL) NOPASSWD: /sbin/reboot
+$USER ALL=(ALL) NOPASSWD: /bin/systemctl
+$USER ALL=(ALL) NOPASSWD: /usr/bin/docker
+EOF
+sudo chmod 440 /etc/sudoers.d/orangepi-bot
+
 sudo systemctl daemon-reload
 sudo systemctl enable orangepi-bot
 
-echo -e "${GREEN}✅ Serviço criado${NC}"
+echo -e "${GREEN}✅ Serviço configurado${NC}"
 
 # ============================================
-# 7. INICIAR BOT
+# 8. INICIAR BOT
 # ============================================
 
-echo -e "${BLUE}[7/7]${NC} Iniciando bot..."
+echo -e "${BLUE}[8/8]${NC} Iniciando bot..."
 
 sudo systemctl restart orangepi-bot
 sleep 3
 
-# Verificar se iniciou
+# Verificar status
 if sudo systemctl is-active --quiet orangepi-bot; then
     echo -e "${GREEN}✅ Bot rodando!${NC}"
 else
-    echo -e "${RED}⚠️ Bot pode não ter iniciado. Verificando logs...${NC}"
-    sudo journalctl -u orangepi-bot -n 20 --no-pager
+    echo -e "${YELLOW}⚠️ Verificando logs...${NC}"
+    sudo journalctl -u orangepi-bot -n 30 --no-pager
 fi
 
 # ============================================
@@ -193,30 +256,40 @@ fi
 IP=$(hostname -I | awk '{print $1}')
 
 echo ""
-echo -e "${GREEN}╔════════════════════════════════════════════════════════╗"
-echo -e "║  🎉 INSTALAÇÃO CONCLUÍDA!                              ║"
-echo -e "╚════════════════════════════════════════════════════════╝${NC}"
+echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗"
+echo -e "║                                                            ║"
+echo -e "║   🎉 INSTALAÇÃO CONCLUÍDA!                                 ║"
+echo -e "║                                                            ║"
+echo -e "╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-echo -e "📱 ${BLUE}Bot Telegram:${NC} @orangepi32bot"
-echo -e "🧠 ${BLUE}Modelo IA:${NC} $OLLAMA_MODEL"
+echo -e "📱 ${BLUE}Bot:${NC} Fale no Telegram com seu bot"
+echo -e "🧠 ${BLUE}Modelo:${NC} $OLLAMA_MODEL"
 echo -e "📁 ${BLUE}Diretório:${NC} $INSTALL_DIR"
 echo -e "🌐 ${BLUE}IP Local:${NC} $IP"
 echo ""
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}Comandos úteis:${NC}"
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${YELLOW}FUNCIONALIDADES DISPONÍVEIS:${NC}"
+echo ""
+echo "  📊 Monitoramento: /status /cpu /ram /temp /disco"
+echo "  💻 Terminal: /exec <comando>"
+echo "  📍 GPIO: /gpio <pin> out <0|1>"
+echo "  🌐 Rede: /rede /wifi /wificonnect"
+echo "  ⚙️  Serviços: /servicos /servico <nome> <ação>"
+echo "  🐳 Docker: /docker /dockerctl"
+echo "  ⏰ Cron: /cron /addcron"
+echo "  📦 Backup: /backups /backup <pasta>"
+echo "  🔌 Energia: /shutdown /reboot"
+echo "  🌐 Navegador: /abrir /screenshot"
+echo "  💬 IA: Qualquer mensagem!"
+echo ""
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo -e "${GREEN}Comandos de gerenciamento:${NC}"
 echo ""
 echo "  sudo systemctl status orangepi-bot   # Ver status"
 echo "  sudo journalctl -u orangepi-bot -f   # Ver logs"
 echo "  sudo systemctl restart orangepi-bot  # Reiniciar"
 echo "  sudo systemctl stop orangepi-bot     # Parar"
 echo ""
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo -e "${GREEN}🤖 Abra o Telegram e fale com @orangepi32bot!${NC}"
-echo ""
-echo -e "Comandos do bot:"
-echo "  /start    - Ver ajuda"
-echo "  /status   - Status do sistema"
-echo "  /exec ls  - Executar comando"
-echo "  Ou envie qualquer pergunta para a IA!"
+echo -e "${CYAN}🤖 Abra o Telegram e envie /start para começar!${NC}"
 echo ""
