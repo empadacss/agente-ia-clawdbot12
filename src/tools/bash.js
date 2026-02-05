@@ -1,8 +1,9 @@
 /**
  * ============================================
- * 💻 BASH TOOL
+ * BASH TOOL
  * ============================================
  * Execução segura de comandos no terminal
+ * com blocklist, timeout e output handling
  * ============================================
  */
 
@@ -11,186 +12,114 @@ const util = require('util');
 
 const execAsync = util.promisify(exec);
 
-// Comandos bloqueados por segurança
-const BLOCKED_PATTERNS = [
-  /rm\s+-rf\s+\/(?!\w)/,    // rm -rf /
-  /mkfs/,                    // formatação
-  /dd\s+if=.*of=\/dev/,     // dd destrutivo
-  />\s*\/dev\/sd[a-z]/,     // sobrescrever disco
-  /:$$\)\s*{.*:.*&.*};/,     // fork bomb
+const DEFAULT_TIMEOUT = 30000;
+const MAX_OUTPUT = 100000;
+const ENV = { ...process.env, DISPLAY: process.env.DISPLAY || ':0' };
+
+// Padrões bloqueados
+const BLOCKED = [
+  /rm\s+-r[f]?\s+\/\s/,        // rm -rf /
+  /rm\s+-r[f]?\s+\/$/,         // rm -rf /
+  /mkfs\./,                     // mkfs.ext4 etc
+  /dd\s+.*of=\/dev\/[sh]d/,    // dd destrutivo
+  />\s*\/dev\/[sh]d/,          // > /dev/sda
+  /:\(\)\s*\{\s*:\|:&\s*\};:/  // fork bomb
 ];
 
-// Timeout padrão (30 segundos)
-const DEFAULT_TIMEOUT = 30000;
-const MAX_OUTPUT = 100000; // 100KB max output
-
-/**
- * Verificar se comando é seguro
- */
-function isCommandSafe(command) {
-  for (const pattern of BLOCKED_PATTERNS) {
-    if (pattern.test(command)) {
-      return false;
-    }
-  }
-  return true;
+function isSafe(cmd) {
+  return !BLOCKED.some(p => p.test(cmd));
 }
 
-/**
- * Executar comando bash
- */
 async function executeBash(command, options = {}) {
-  const {
-    timeout = DEFAULT_TIMEOUT,
-    cwd = process.env.HOME,
-    env = process.env
-  } = options;
-  
-  // Verificar segurança
-  if (!isCommandSafe(command)) {
-    return {
-      success: false,
-      error: 'Comando bloqueado por segurança',
-      command
-    };
+  const timeout = options.timeout || DEFAULT_TIMEOUT;
+
+  if (!isSafe(command)) {
+    return { success: false, error: 'Comando bloqueado por segurança', command };
   }
-  
+
   try {
     const { stdout, stderr } = await execAsync(command, {
       timeout,
-      cwd,
-      env,
+      cwd: options.cwd || process.env.HOME,
+      env: ENV,
       maxBuffer: MAX_OUTPUT,
       shell: '/bin/bash'
     });
-    
-    let output = stdout || '';
-    if (stderr && !stdout) {
-      output = stderr;
+
+    // Combinar stdout e stderr para dar contexto completo
+    let output = (stdout || '').trim();
+    const errOutput = (stderr || '').trim();
+    if (errOutput && !output) {
+      output = errOutput;
+    } else if (errOutput) {
+      output += '\n--- stderr ---\n' + errOutput;
     }
-    
-    // Truncar output se muito grande
+
     if (output.length > MAX_OUTPUT) {
-      output = output.slice(0, MAX_OUTPUT) + '\n... (output truncado)';
+      output = output.slice(0, MAX_OUTPUT) + '\n... (truncado)';
     }
-    
-    return {
-      success: true,
-      output: output.trim(),
-      command
-    };
-  } catch (error) {
-    // Verificar se foi timeout
-    if (error.killed) {
-      return {
-        success: false,
-        error: `Timeout após ${timeout / 1000}s`,
-        command
-      };
+
+    return { success: true, output, command };
+  } catch (err) {
+    if (err.killed) {
+      return { success: false, error: `Timeout (${timeout / 1000}s)`, command };
     }
-    
-    // Retornar erro com output se disponível
+
+    // Comandos que retornam exit code != 0 ainda podem ter output útil
+    const output = ((err.stdout || '') + '\n' + (err.stderr || '')).trim();
     return {
       success: false,
-      error: error.message,
-      output: error.stdout || error.stderr || '',
-      exitCode: error.code,
+      error: err.message,
+      output: output.slice(0, MAX_OUTPUT),
+      exitCode: err.code,
       command
     };
   }
 }
 
-/**
- * Executar comando em background
- */
-function executeBashBackground(command, options = {}) {
-  const { cwd = process.env.HOME, env = process.env } = options;
-  
-  if (!isCommandSafe(command)) {
-    return {
-      success: false,
-      error: 'Comando bloqueado por segurança'
-    };
+function executeBashBackground(command) {
+  if (!isSafe(command)) {
+    return { success: false, error: 'Comando bloqueado' };
   }
-  
   const child = spawn('bash', ['-c', command], {
-    cwd,
-    env,
+    cwd: process.env.HOME,
+    env: ENV,
     detached: true,
     stdio: 'ignore'
   });
-  
   child.unref();
-  
-  return {
-    success: true,
-    message: 'Comando iniciado em background',
-    pid: child.pid,
-    command
-  };
+  return { success: true, message: 'Background', pid: child.pid, command };
 }
 
-/**
- * Handler da ferramenta bash
- */
 async function bashHandler(input) {
-  const { command, restart, timeout } = input;
-  
-  if (restart) {
-    // Reiniciar shell (limpar estado)
-    return { success: true, message: 'Shell reiniciado' };
-  }
-  
-  if (!command) {
-    return { error: 'Comando é obrigatório' };
-  }
-  
+  const { command, timeout } = input;
+  if (!command) return { error: 'command é obrigatório' };
   return await executeBash(command, { timeout });
 }
 
-/**
- * Definição da ferramenta para o Claude
- */
 const bashTool = {
   name: 'bash',
-  description: `Executa comandos no terminal bash.
+  description: `Executa comandos bash no terminal.
 
-Use para:
-- Instalar pacotes (apt, npm, pip)
-- Gerenciar arquivos (ls, cp, mv, mkdir)
-- Verificar processos (ps, top, htop)
-- Gerenciar serviços (systemctl)
-- Executar scripts
-- Verificar sistema (df, free, uptime)
+Exemplos de uso:
+- Instalar pacotes: "sudo apt install -y htop"
+- Listar arquivos: "ls -la /home"
+- Status do sistema: "free -h && df -h && uptime"
+- Gerenciar serviços: "sudo systemctl status nginx"
+- Processos: "ps aux | head -20"
 
-Comandos perigosos são bloqueados automaticamente.
-Timeout padrão: 30 segundos.`,
-  
+Timeout padrão: 30s. Comandos destrutivos são bloqueados.`,
+
   inputSchema: {
     type: 'object',
     properties: {
-      command: {
-        type: 'string',
-        description: 'O comando bash a ser executado'
-      },
-      timeout: {
-        type: 'number',
-        description: 'Timeout em milissegundos (padrão: 30000)'
-      },
-      restart: {
-        type: 'boolean',
-        description: 'Se true, reinicia o shell'
-      }
+      command: { type: 'string', description: 'Comando bash para executar' },
+      timeout: { type: 'number', description: 'Timeout em ms (padrão 30000)' }
     },
     required: ['command']
   },
-  
+
   handler: bashHandler
 };
 
-module.exports = {
-  bashTool,
-  executeBash,
-  executeBashBackground,
-  isCommandSafe
-};
+module.exports = { bashTool, executeBash, executeBashBackground, isSafe };

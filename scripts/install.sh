@@ -1,236 +1,148 @@
 #!/bin/bash
-
 # ============================================
-# 🤖 CLAUDE AGENT - INSTALADOR
-# Orange Pi 6 Plus
+# CLAUDE AGENT - Instalador para Orange Pi 6 Plus
 # ============================================
-
 set -e
 
-# Cores
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
-NC='\033[0m'
+RED='\033[0;31m'; GREEN='\033[0;32m'; BLUE='\033[0;34m'
+YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
-clear
-echo -e "${MAGENTA}"
-cat << 'BANNER'
-╔════════════════════════════════════════════════════════════════╗
-║                                                                ║
-║   🤖 CLAUDE AGENT - Orange Pi 6 Plus                           ║
-║                                                                ║
-║   Agente de IA de Nível Empresarial                            ║
-║   Powered by Claude API (Anthropic)                            ║
-║                                                                ║
-║   🧠 Claude Sonnet | 🖥️ Computer Use | 💻 Bash | 🌐 Browser    ║
-║                                                                ║
-╚════════════════════════════════════════════════════════════════╝
-BANNER
-echo -e "${NC}"
+log()  { echo -e "${BLUE}[$(date +%H:%M:%S)]${NC} $1"; }
+ok()   { echo -e "${GREEN}[OK]${NC} $1"; }
+warn() { echo -e "${YELLOW}[!]${NC} $1"; }
+fail() { echo -e "${RED}[ERRO]${NC} $1"; exit 1; }
 
-# ============================================
-# CONFIGURAÇÕES - OBRIGATÓRIAS
-# ============================================
+echo ""
+echo -e "${CYAN}=========================================${NC}"
+echo -e "${CYAN}  CLAUDE AGENT - Orange Pi 6 Plus${NC}"
+echo -e "${CYAN}  Powered by Claude API (Anthropic)${NC}"
+echo -e "${CYAN}=========================================${NC}"
+echo ""
 
+# ---- Config ----
 ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
 TELEGRAM_TOKEN="${TELEGRAM_TOKEN:-}"
 ALLOWED_USERS="${ALLOWED_USERS:-}"
-
-# Opcionais
 CLAUDE_MODEL="${CLAUDE_MODEL:-claude-sonnet-4-20250514}"
 INSTALL_DIR="$HOME/claude-agent"
-GITHUB_REPO="https://github.com/empadacss/agente-ia-clawdbot12.git"
+REPO="https://github.com/empadacss/agente-ia-clawdbot12.git"
 
-# ============================================
-# VALIDAÇÃO
-# ============================================
+# ---- Validacao ----
+[ -z "$ANTHROPIC_API_KEY" ] && fail "ANTHROPIC_API_KEY obrigatoria!\n\nUso:\n  ANTHROPIC_API_KEY=\"sk-ant-...\" TELEGRAM_TOKEN=\"...\" ALLOWED_USERS=\"id\" bash install.sh"
+[ -z "$TELEGRAM_TOKEN" ]    && fail "TELEGRAM_TOKEN obrigatorio! Crie com @BotFather"
 
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}Configurações:${NC}"
-echo -e "  🔑 Anthropic API: ${ANTHROPIC_API_KEY:0:20}..."
-echo -e "  📱 Telegram: ${TELEGRAM_TOKEN:0:20}..."
-echo -e "  👤 Usuários: $ALLOWED_USERS"
-echo -e "  🧠 Modelo: $CLAUDE_MODEL"
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "  API Key: ${ANTHROPIC_API_KEY:0:15}..."
+echo -e "  Telegram: ${TELEGRAM_TOKEN:0:15}..."
+echo -e "  Users: ${ALLOWED_USERS:-todos}"
+echo -e "  Modelo: $CLAUDE_MODEL"
 echo ""
 
-if [[ -z "$ANTHROPIC_API_KEY" ]]; then
-    echo -e "${RED}❌ ANTHROPIC_API_KEY é obrigatória!${NC}"
-    echo ""
-    echo "Obtenha sua API key em: https://console.anthropic.com/"
-    echo ""
-    echo "Execute assim:"
-    echo -e "${GREEN}ANTHROPIC_API_KEY=\"sk-ant-...\" TELEGRAM_TOKEN=\"...\" ALLOWED_USERS=\"seu_id\" bash install.sh${NC}"
-    echo ""
-    exit 1
+# ---- 1. Sistema ----
+log "Atualizando sistema..."
+sudo apt update -qq
+sudo apt upgrade -y -qq
+ok "Sistema atualizado"
+
+# ---- 2. Dependencias ----
+log "Instalando dependencias..."
+sudo apt install -y -qq curl wget git build-essential ca-certificates gnupg 2>/dev/null
+ok "Dependencias base"
+
+# ---- 3. X11 Tools ----
+log "Instalando ferramentas X11..."
+sudo apt install -y -qq xdotool wmctrl xclip xsel scrot imagemagick x11-utils x11-xserver-utils 2>/dev/null
+ok "Ferramentas X11"
+
+# Chromium
+if ! command -v chromium-browser &>/dev/null && ! command -v chromium &>/dev/null; then
+    log "Instalando Chromium..."
+    sudo apt install -y chromium-browser 2>/dev/null || sudo apt install -y chromium 2>/dev/null || warn "Chromium nao encontrado"
 fi
+ok "Navegador"
 
-if [[ -z "$TELEGRAM_TOKEN" ]]; then
-    echo -e "${RED}❌ TELEGRAM_TOKEN é obrigatório!${NC}"
-    echo ""
-    echo "Crie um bot com @BotFather no Telegram"
-    exit 1
-fi
-
-# ============================================
-# 1. ATUALIZAR SISTEMA
-# ============================================
-
-echo -e "${BLUE}[1/8]${NC} Atualizando sistema..."
-sudo apt update
-sudo apt upgrade -y
-
-echo -e "${GREEN}✅ Sistema atualizado${NC}"
-
-# ============================================
-# 2. DEPENDÊNCIAS BASE
-# ============================================
-
-echo -e "${BLUE}[2/8]${NC} Instalando dependências..."
-
-sudo apt install -y \
-    curl \
-    wget \
-    git \
-    build-essential \
-    ca-certificates \
-    gnupg \
-    lsb-release
-
-echo -e "${GREEN}✅ Dependências base instaladas${NC}"
-
-# ============================================
-# 3. FERRAMENTAS DE CONTROLE (X11)
-# ============================================
-
-echo -e "${BLUE}[3/8]${NC} Instalando ferramentas de controle..."
-
-# Ferramentas essenciais para Computer Use
-sudo apt install -y \
-    xdotool \
-    wmctrl \
-    xclip \
-    xsel \
-    scrot \
-    imagemagick \
-    x11-utils \
-    x11-xserver-utils
-
-# Navegador
-sudo apt install -y chromium-browser || sudo apt install -y chromium || true
-
-echo -e "${GREEN}✅ Ferramentas de controle instaladas${NC}"
-
-# ============================================
-# 4. NODE.JS 22
-# ============================================
-
-echo -e "${BLUE}[4/8]${NC} Instalando Node.js 22..."
-
+# ---- 4. Node.js ----
+log "Configurando Node.js 22..."
 export NVM_DIR="$HOME/.nvm"
-
 if [ ! -d "$NVM_DIR" ]; then
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 fi
-
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-if ! command -v node &> /dev/null || [ "$(node -v | cut -d. -f1 | tr -d 'v')" -lt 20 ]; then
+NODE_MAJOR="$(node -v 2>/dev/null | cut -d. -f1 | tr -d 'v' || echo 0)"
+if [ "$NODE_MAJOR" -lt 20 ]; then
     nvm install 22
     nvm use 22
     nvm alias default 22
 fi
 
 # Garantir NVM no bashrc
-if ! grep -q "NVM_DIR" ~/.bashrc; then
-    cat >> ~/.bashrc << 'BASHEOF'
-
-# NVM
+grep -q "NVM_DIR" ~/.bashrc 2>/dev/null || cat >> ~/.bashrc << 'EOF'
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-BASHEOF
-fi
-
-echo -e "${GREEN}✅ Node.js $(node -v) instalado${NC}"
-
-# ============================================
-# 5. CLONAR REPOSITÓRIO
-# ============================================
-
-echo -e "${BLUE}[5/8]${NC} Baixando agente..."
-
-if [ -d "$INSTALL_DIR" ]; then
-    cd "$INSTALL_DIR"
-    git pull || true
-else
-    git clone "$GITHUB_REPO" "$INSTALL_DIR"
-fi
-
-cd "$INSTALL_DIR"
-
-echo -e "${GREEN}✅ Repositório clonado${NC}"
-
-# ============================================
-# 6. INSTALAR DEPENDÊNCIAS NODE
-# ============================================
-
-echo -e "${BLUE}[6/8]${NC} Instalando dependências do Node..."
-
-npm install
-
-echo -e "${GREEN}✅ Dependências instaladas${NC}"
-
-# ============================================
-# 7. CONFIGURAR AMBIENTE
-# ============================================
-
-echo -e "${BLUE}[7/8]${NC} Configurando ambiente..."
-
-# Criar .env
-cat > .env << EOF
-# Anthropic (Claude API)
-ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
-CLAUDE_MODEL=$CLAUDE_MODEL
-
-# Telegram
-TELEGRAM_BOT_TOKEN=$TELEGRAM_TOKEN
-TELEGRAM_ALLOWED_CHAT_ID=$ALLOWED_USERS
-
-# Agente
-MAX_ITERATIONS=25
-MAX_TOKENS=8192
-
-# Display
-DISPLAY=:0
-
-# Puppeteer
-PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-
-# Node
-NODE_ENV=production
 EOF
 
-# Configurar X11
+ok "Node.js $(node -v)"
+
+# ---- 5. Repositorio ----
+log "Baixando agente..."
+if [ -d "$INSTALL_DIR/.git" ]; then
+    cd "$INSTALL_DIR" && git pull --ff-only 2>/dev/null || true
+else
+    rm -rf "$INSTALL_DIR" 2>/dev/null
+    git clone "$REPO" "$INSTALL_DIR"
+fi
+cd "$INSTALL_DIR"
+ok "Repositorio"
+
+# ---- 6. Deps Node ----
+log "Instalando modulos..."
+npm install --omit=dev 2>&1 | tail -3
+ok "Modulos Node"
+
+# ---- 7. Ambiente ----
+log "Configurando ambiente..."
+
+# Detectar chromium
+CHROMIUM=""
+command -v chromium-browser &>/dev/null && CHROMIUM="chromium-browser"
+command -v chromium         &>/dev/null && CHROMIUM="chromium"
+CHROMIUM_PATH="$(command -v $CHROMIUM 2>/dev/null || echo /usr/bin/chromium-browser)"
+
+cat > .env << ENVEOF
+ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
+CLAUDE_MODEL=$CLAUDE_MODEL
+TELEGRAM_BOT_TOKEN=$TELEGRAM_TOKEN
+TELEGRAM_ALLOWED_CHAT_ID=$ALLOWED_USERS
+MAX_ITERATIONS=25
+MAX_TOKENS=8192
+DISPLAY=:0
+PUPPETEER_EXECUTABLE_PATH=$CHROMIUM_PATH
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+NODE_ENV=production
+ENVEOF
+
 xhost +local: 2>/dev/null || true
+ok "Ambiente"
 
-echo -e "${GREEN}✅ Ambiente configurado${NC}"
+# ---- 8. Swap ----
+SWAP_MB=$(free -m | awk '/^Swap:/{print $2}')
+if [ "${SWAP_MB:-0}" -lt 4000 ]; then
+    log "Configurando swap 8GB..."
+    sudo fallocate -l 8G /swapfile 2>/dev/null || sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 status=progress
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    grep -q "/swapfile" /etc/fstab || echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab >/dev/null
+    ok "Swap 8GB"
+else
+    ok "Swap ja existe (${SWAP_MB}MB)"
+fi
 
-# ============================================
-# 8. CRIAR SERVIÇO SYSTEMD
-# ============================================
+# ---- 9. Systemd ----
+log "Criando servico..."
+NODE_BIN="$(dirname "$(which node)")"
 
-echo -e "${BLUE}[8/8]${NC} Criando serviço systemd..."
-
-NODE_PATH="$(dirname "$(which node)")"
-CHROMIUM_PATH="/usr/bin/chromium-browser"
-[ -f "/usr/bin/chromium" ] && CHROMIUM_PATH="/usr/bin/chromium"
-
-sudo tee /etc/systemd/system/claude-agent.service > /dev/null << EOF
+sudo tee /etc/systemd/system/claude-agent.service > /dev/null << SVCEOF
 [Unit]
 Description=Claude Agent - Orange Pi 6 Plus
 After=network.target graphical.target
@@ -240,20 +152,11 @@ Wants=graphical.target
 Type=simple
 User=$USER
 WorkingDirectory=$INSTALL_DIR
+EnvironmentFile=$INSTALL_DIR/.env
 Environment="HOME=$HOME"
-Environment="PATH=$NODE_PATH:/usr/local/bin:/usr/bin:/bin"
-Environment="NODE_ENV=production"
-Environment="DISPLAY=:0"
+Environment="PATH=$NODE_BIN:/usr/local/bin:/usr/bin:/bin"
 Environment="XAUTHORITY=$HOME/.Xauthority"
-Environment="ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY"
-Environment="CLAUDE_MODEL=$CLAUDE_MODEL"
-Environment="TELEGRAM_BOT_TOKEN=$TELEGRAM_TOKEN"
-Environment="TELEGRAM_ALLOWED_CHAT_ID=$ALLOWED_USERS"
-Environment="PUPPETEER_EXECUTABLE_PATH=$CHROMIUM_PATH"
-Environment="PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true"
-Environment="MAX_ITERATIONS=25"
-Environment="MAX_TOKENS=8192"
-ExecStart=$NODE_PATH/node index.js
+ExecStart=$NODE_BIN/node index.js
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -261,104 +164,45 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
-EOF
+SVCEOF
 
-# Configurar sudoers
+# Sudoers
 sudo tee /etc/sudoers.d/claude-agent > /dev/null << EOF
-$USER ALL=(ALL) NOPASSWD: /sbin/shutdown
-$USER ALL=(ALL) NOPASSWD: /sbin/reboot
-$USER ALL=(ALL) NOPASSWD: /bin/systemctl
-$USER ALL=(ALL) NOPASSWD: /usr/bin/apt
-$USER ALL=(ALL) NOPASSWD: /usr/bin/apt-get
+$USER ALL=(ALL) NOPASSWD: /sbin/shutdown, /sbin/reboot, /bin/systemctl, /usr/bin/apt, /usr/bin/apt-get
 EOF
 sudo chmod 440 /etc/sudoers.d/claude-agent
 
 sudo systemctl daemon-reload
 sudo systemctl enable claude-agent
+ok "Servico systemd"
 
-echo -e "${GREEN}✅ Serviço criado${NC}"
-
-# ============================================
-# INICIAR AGENTE
-# ============================================
-
-echo -e "${BLUE}[FINAL]${NC} Iniciando agente..."
-
+# ---- 10. Iniciar ----
+log "Iniciando agente..."
 sudo systemctl restart claude-agent
 sleep 3
 
 if sudo systemctl is-active --quiet claude-agent; then
-    STATUS="${GREEN}✅ RODANDO${NC}"
+    ok "Agente rodando!"
 else
-    STATUS="${YELLOW}⚠️ VERIFICAR LOGS${NC}"
-    echo ""
-    sudo journalctl -u claude-agent -n 30 --no-pager
+    warn "Verifique logs: sudo journalctl -u claude-agent -n 30 --no-pager"
+    sudo journalctl -u claude-agent -n 20 --no-pager
 fi
 
-# ============================================
-# FINALIZAÇÃO
-# ============================================
-
+# ---- Final ----
 IP=$(hostname -I | awk '{print $1}')
-
 echo ""
-echo -e "${MAGENTA}"
-cat << 'DONE'
-╔════════════════════════════════════════════════════════════════╗
-║                                                                ║
-║   🎉 INSTALAÇÃO CONCLUÍDA!                                     ║
-║                                                                ║
-╚════════════════════════════════════════════════════════════════╝
-DONE
-echo -e "${NC}"
-
-echo -e "📊 Status: $STATUS"
-echo -e "🌐 IP: $IP"
-echo -e "🧠 Modelo: $CLAUDE_MODEL"
-echo -e "📁 Diretório: $INSTALL_DIR"
+echo -e "${CYAN}=========================================${NC}"
+echo -e "${GREEN}  INSTALACAO CONCLUIDA!${NC}"
+echo -e "${CYAN}=========================================${NC}"
 echo ""
-
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}O QUE O AGENTE PODE FAZER:${NC}"
+echo "  IP: $IP"
+echo "  Modelo: $CLAUDE_MODEL"
+echo "  Dir: $INSTALL_DIR"
 echo ""
-echo "  🧠 INTELIGÊNCIA"
-echo "      Claude Sonnet processa suas solicitações em linguagem natural"
-echo "      e decide autonomamente como executar tarefas complexas"
+echo "  Gerenciamento:"
+echo "    sudo systemctl status claude-agent"
+echo "    sudo journalctl -u claude-agent -f"
+echo "    sudo systemctl restart claude-agent"
 echo ""
-echo "  🖥️ COMPUTER USE"
-echo "      Ver a tela, mover mouse, clicar, digitar, arrastar"
-echo "      O Claude vê screenshots e decide onde clicar"
-echo ""
-echo "  💻 TERMINAL"
-echo "      Executar qualquer comando bash"
-echo "      Instalar pacotes, gerenciar arquivos, etc"
-echo ""
-echo "  📝 EDITOR"
-echo "      Criar e editar arquivos de código"
-echo "      Modificar configurações"
-echo ""
-echo "  🌐 BROWSER"
-echo "      Navegar na internet, pesquisar"
-echo "      Automatizar tarefas web"
-echo ""
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo -e "${CYAN}EXEMPLOS DE USO:${NC}"
-echo ""
-echo '  "Abra o navegador e pesquise sobre Orange Pi"'
-echo '  "Crie um script Python que liste arquivos"'
-echo '  "Instale o Docker"'
-echo '  "Mostre o uso de CPU e memória"'
-echo '  "Abra o terminal e execute htop"'
-echo '  "Clique no menu e abra configurações"'
-echo ""
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo -e "${GREEN}Gerenciamento:${NC}"
-echo ""
-echo "  sudo systemctl status claude-agent"
-echo "  sudo journalctl -u claude-agent -f"
-echo "  sudo systemctl restart claude-agent"
-echo ""
-echo -e "${MAGENTA}🤖 Abra o Telegram e converse com seu agente!${NC}"
+echo -e "${GREEN}  Abra o Telegram e converse com seu agente!${NC}"
 echo ""

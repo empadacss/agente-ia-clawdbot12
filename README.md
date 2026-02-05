@@ -1,262 +1,100 @@
-# 🤖 CLAUDE AGENT - Orange Pi 6 Plus
+# CLAUDE AGENT - Orange Pi 6 Plus
 
-**Agente de IA de Nível Empresarial** para controle total da Orange Pi 6 Plus via Telegram.
+Agente de IA autonomo para controle total da Orange Pi 6 Plus via Telegram, powered by **Claude API** com **Computer Use**.
 
-Powered by **Claude API (Anthropic)** com **Computer Use**.
-
----
-
-## 🚀 Instalação Rápida
+## Instalacao
 
 ```bash
-ANTHROPIC_API_KEY="sua_api_key" \
-TELEGRAM_TOKEN="seu_token" \
+ANTHROPIC_API_KEY="sk-ant-..." \
+TELEGRAM_TOKEN="123:ABC..." \
 ALLOWED_USERS="seu_chat_id" \
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/scripts/install.sh)"
 ```
 
----
+## Capacidades
 
-## ✨ O Que Este Agente Faz
+| Ferramenta | O que faz |
+|-----------|-----------|
+| **computer** | Ve a tela via screenshot, controla mouse e teclado |
+| **bash** | Executa qualquer comando no terminal |
+| **editor** | Cria e edita arquivos |
+| **browser** | Navega na internet, pesquisa, extrai conteudo |
 
-### 🧠 Inteligência Avançada
-- **Claude Sonnet** como cérebro
-- Entende linguagem natural
-- Executa tarefas complexas autonomamente
-- Planeja e executa múltiplos passos
+O Claude decide autonomamente quais ferramentas usar para completar sua solicitacao.
+Ele pode encadear ate 25 acoes por mensagem.
 
-### 🖥️ Computer Use
-- **Ver a tela** através de screenshots
-- **Controlar mouse**: mover, clicar, arrastar
-- **Controlar teclado**: digitar, atalhos
-- Claude decide onde clicar baseado no que vê
+## Comandos Telegram
 
-### 💻 Terminal Completo
-- Executar qualquer comando bash
-- Instalar pacotes
-- Gerenciar serviços
-- Monitorar sistema
-
-### 📝 Editor de Arquivos
-- Criar arquivos
-- Editar código
-- Substituir texto
-- Modificar configurações
-
-### 🌐 Navegador Web
-- Pesquisar no Google/YouTube
-- Navegar em sites
-- Automatizar tarefas web
-- Capturar screenshots de páginas
-
----
-
-## 📱 Comandos do Telegram
-
-| Comando | Descrição |
+| Comando | Descricao |
 |---------|-----------|
-| `/start` | Iniciar e ver ajuda |
-| `/screenshot` | Capturar tela |
+| `/start` | Ajuda |
+| `/screenshot` | Captura tela |
 | `/status` | Status do agente e sistema |
-| `/clear` | Limpar histórico |
-| `/stop` | Parar tarefa atual |
+| `/clear` | Limpa historico |
+| `/stop` | Cancela tarefa |
 
----
+Fora dos comandos, qualquer mensagem em linguagem natural sera processada pelo agente.
 
-## 💬 Exemplos de Uso
+## Exemplos
 
 ```
-"Abra o navegador e pesquise sobre Linux"
-"Crie um arquivo Python que calcule fatorial"
-"Mostre o uso de CPU e memória"
+"Abra o navegador e pesquise sobre Orange Pi"
+"Crie um script Python que calcule fatorial"
 "Instale o Docker"
-"Abra o terminal e execute htop"
-"Clique no menu e abra configurações"
-"Tire um screenshot e me diga o que está na tela"
-"Crie uma pasta chamada projetos e um arquivo README dentro"
+"Tire um screenshot e me diga o que esta na tela"
+"Abra o terminal e rode htop"
 ```
 
----
+Voce tambem pode enviar **fotos** para o agente analisar.
 
-## ⚙️ Configuração
+## Configuracao
 
-### 1. Obter API Key da Anthropic
-
+### API Key da Anthropic
 1. Acesse [console.anthropic.com](https://console.anthropic.com/)
-2. Crie uma conta ou faça login
-3. Vá em "API Keys"
-4. Crie uma nova key
-5. Copie a key (começa com `sk-ant-`)
+2. Crie uma API Key (comeca com `sk-ant-`)
 
-### 2. Criar Bot no Telegram
+### Bot do Telegram
+1. Fale com `@BotFather` no Telegram
+2. Crie um bot com `/newbot`
+3. Copie o token
 
-1. Abra o Telegram e busque `@BotFather`
-2. Envie `/newbot`
-3. Escolha um nome e username
-4. Copie o token
+### Chat ID
+1. Fale com `@userinfobot` no Telegram
+2. Copie seu ID numerico
 
-### 3. Obter seu Chat ID
-
-1. Abra o Telegram e busque `@userinfobot`
-2. Envie `/start`
-3. Copie seu ID numérico
-
----
-
-## 🔧 Gerenciamento
-
-```bash
-# Ver status
-sudo systemctl status claude-agent
-
-# Ver logs
-sudo journalctl -u claude-agent -f
-
-# Reiniciar
-sudo systemctl restart claude-agent
-
-# Parar
-sudo systemctl stop claude-agent
-
-# Iniciar
-sudo systemctl start claude-agent
-```
-
----
-
-## 📁 Estrutura do Projeto
+## Estrutura
 
 ```
 claude-agent/
-├── index.js              # Ponto de entrada principal
-├── package.json          # Dependências
-├── .env                  # Configurações (criado na instalação)
-├── src/
-│   ├── core/
-│   │   └── agent.js      # Motor do agente Claude
-│   └── tools/
-│       ├── computer.js   # Computer Use (mouse/teclado/tela)
-│       ├── bash.js       # Execução de comandos
-│       ├── editor.js     # Edição de arquivos
-│       └── browser.js    # Navegação web
-└── scripts/
-    └── install.sh        # Script de instalação
+  index.js            # Entrada principal + Telegram
+  package.json
+  .env                # Configuracoes (criado na instalacao)
+  src/
+    core/
+      agent.js        # Motor do agente (agentic loop)
+    tools/
+      computer.js     # Mouse, teclado, screenshots
+      bash.js         # Terminal
+      editor.js       # Edicao de arquivos
+      browser.js      # Navegacao web
+  scripts/
+    install.sh        # Instalador
 ```
 
----
+## Gerenciamento
 
-## 🛠️ Ferramentas do Claude
-
-O agente tem acesso às seguintes ferramentas:
-
-### computer
-Controle completo do computador:
-- `screenshot` - Capturar tela
-- `mouse_move` - Mover cursor
-- `left_click` - Clicar
-- `double_click` - Duplo clique
-- `type` - Digitar texto
-- `key` - Pressionar teclas
-- `scroll` - Rolar página
-
-### bash
-Executar comandos no terminal
-
-### str_replace_editor
-- `view` - Ver arquivo
-- `create` - Criar arquivo
-- `str_replace` - Substituir texto
-- `insert` - Inserir linha
-
-### browser
-- `navigate` - Navegar para URL
-- `search` - Pesquisar no Google
-- `youtube` - Pesquisar no YouTube
-- `screenshot` - Screenshot da página
-- `click` - Clicar em elemento
-- `type` - Digitar em campo
-
----
-
-## 📋 Requisitos
-
-### Hardware
-- Orange Pi 6 Plus (32GB RAM recomendado)
-- Processador RK3588
-- Ambiente gráfico (X11)
-
-### Software
-- Ubuntu/Debian para Orange Pi
-- Node.js 20+
-- Chromium Browser
-
-### Rede
-- Conexão com internet
-- Acesso à API da Anthropic
-
----
-
-## 🔐 Segurança
-
-- Apenas usuários autorizados podem usar o bot
-- Comandos destrutivos são bloqueados
-- API key armazenada localmente
-- Comunicação via Telegram criptografada
-
----
-
-## 💰 Custos
-
-Este agente usa a API paga da Anthropic:
-- Claude Sonnet: ~$3/$15 por milhão de tokens (input/output)
-- Uso típico: ~$0.01-0.10 por conversa
-- Screenshots contam como tokens de imagem
-
-Monitore seu uso em [console.anthropic.com](https://console.anthropic.com/)
-
----
-
-## 🆘 Solução de Problemas
-
-### Agente não responde
 ```bash
-sudo journalctl -u claude-agent -n 50 --no-pager
+sudo systemctl status claude-agent     # Status
+sudo journalctl -u claude-agent -f     # Logs
+sudo systemctl restart claude-agent    # Reiniciar
+sudo systemctl stop claude-agent       # Parar
 ```
 
-### Erro de API Key
-Verifique se a key está correta no `.env`
+## Custos
 
-### Erro de Display
-```bash
-export DISPLAY=:0
-xhost +local:
-```
+Claude Sonnet: ~$3/$15 por milhao de tokens (input/output).
+Uso tipico: $0.01-0.10 por conversa.
 
-### Screenshots não funcionam
-```bash
-sudo apt install scrot xdotool
-```
+## Licenca
 
----
-
-## 📄 Licença
-
-MIT License
-
----
-
-## 🤝 Contribuição
-
-Pull requests são bem-vindos!
-
-1. Fork o projeto
-2. Crie sua branch (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -m 'Add nova feature'`)
-4. Push para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
-
----
-
-**Desenvolvido para Orange Pi 6 Plus** 🍊
-
-*Powered by Claude (Anthropic)*
+MIT

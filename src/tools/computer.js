@@ -1,287 +1,263 @@
 /**
  * ============================================
- * 🖥️ COMPUTER USE TOOL
+ * COMPUTER USE TOOL
  * ============================================
- * Controle completo de Mouse, Teclado e Tela
- * Compatível com Claude Computer Use
+ * Controle de Mouse, Teclado e Tela via xdotool
+ * com redimensionamento de screenshots para economia de tokens
  * ============================================
  */
 
 const { exec } = require('child_process');
 const util = require('util');
 const fs = require('fs');
-const path = require('path');
 
 const execAsync = util.promisify(exec);
 
-// Configurações de tela
-const SCREEN = {
-  width: 1920,
-  height: 1080
-};
+const ENV = { ...process.env, DISPLAY: process.env.DISPLAY || ':0' };
 
-// Mapeamento de teclas
+// Resolução real e resolução das imagens enviadas para a API
+let SCREEN_W = 1920;
+let SCREEN_H = 1080;
+const API_MAX_LONG = 1280; // max lado longo do screenshot enviado à API
+
+// Mapeamento de teclas xdotool
 const KEY_MAP = {
-  'Return': 'Return', 'enter': 'Return',
-  'Escape': 'Escape', 'esc': 'Escape',
-  'Tab': 'Tab', 'tab': 'Tab',
-  'space': 'space', ' ': 'space',
-  'BackSpace': 'BackSpace', 'backspace': 'BackSpace',
-  'Delete': 'Delete', 'delete': 'Delete',
-  'Up': 'Up', 'up': 'Up',
-  'Down': 'Down', 'down': 'Down',
-  'Left': 'Left', 'left': 'Left',
-  'Right': 'Right', 'right': 'Right',
-  'Home': 'Home', 'home': 'Home',
-  'End': 'End', 'end': 'End',
-  'Page_Up': 'Page_Up', 'pageup': 'Page_Up',
-  'Page_Down': 'Page_Down', 'pagedown': 'Page_Down',
-  'F1': 'F1', 'F2': 'F2', 'F3': 'F3', 'F4': 'F4',
-  'F5': 'F5', 'F6': 'F6', 'F7': 'F7', 'F8': 'F8',
-  'F9': 'F9', 'F10': 'F10', 'F11': 'F11', 'F12': 'F12'
+  enter: 'Return', return: 'Return', Return: 'Return',
+  escape: 'Escape', esc: 'Escape', Escape: 'Escape',
+  tab: 'Tab', Tab: 'Tab',
+  space: 'space', ' ': 'space',
+  backspace: 'BackSpace', BackSpace: 'BackSpace',
+  delete: 'Delete', Delete: 'Delete',
+  up: 'Up', Up: 'Up', down: 'Down', Down: 'Down',
+  left: 'Left', Left: 'Left', right: 'Right', Right: 'Right',
+  home: 'Home', Home: 'Home', end: 'End', End: 'End',
+  pageup: 'Page_Up', Page_Up: 'Page_Up',
+  pagedown: 'Page_Down', Page_Down: 'Page_Down',
+  F1: 'F1', F2: 'F2', F3: 'F3', F4: 'F4',
+  F5: 'F5', F6: 'F6', F7: 'F7', F8: 'F8',
+  F9: 'F9', F10: 'F10', F11: 'F11', F12: 'F12',
+  super: 'super', ctrl: 'ctrl', alt: 'alt', shift: 'shift'
 };
 
-/**
- * Capturar screenshot e retornar em base64
- */
-async function takeScreenshot() {
-  const filepath = `/tmp/screenshot-${Date.now()}.png`;
-  
+function mapKey(k) { return KEY_MAP[k] || KEY_MAP[k.toLowerCase()] || k; }
+
+// ----- Helpers -----
+
+async function run(cmd) {
+  return execAsync(cmd, { env: ENV, timeout: 10000 });
+}
+
+async function detectResolution() {
   try {
-    // Tentar com scrot primeiro
-    await execAsync(`scrot -o ${filepath}`);
+    const { stdout } = await run("xdpyinfo | grep dimensions | awk '{print $2}'");
+    const [w, h] = stdout.trim().split('x').map(Number);
+    if (w > 0 && h > 0) { SCREEN_W = w; SCREEN_H = h; }
+  } catch {}
+}
+
+// ----- Screenshot -----
+
+async function takeScreenshot() {
+  await detectResolution();
+
+  const raw = `/tmp/ss-raw-${Date.now()}.png`;
+  const resized = `/tmp/ss-${Date.now()}.png`;
+
+  // Capturar
+  try {
+    await run(`scrot -o "${raw}"`);
   } catch {
-    // Fallback para import (ImageMagick)
     try {
-      await execAsync(`DISPLAY=:0 import -window root ${filepath}`);
-    } catch (error) {
-      throw new Error(`Falha ao capturar tela: ${error.message}`);
+      await run(`import -window root "${raw}"`);
+    } catch (e) {
+      throw new Error('Falha ao capturar tela: ' + e.message);
     }
   }
-  
-  // Ler arquivo e converter para base64
-  const imageBuffer = fs.readFileSync(filepath);
-  const base64 = imageBuffer.toString('base64');
-  
-  // Limpar arquivo temporário
-  try { fs.unlinkSync(filepath); } catch {}
-  
-  // Atualizar dimensões da tela
-  try {
-    const { stdout } = await execAsync("xdpyinfo | grep dimensions | awk '{print $2}'");
-    const [w, h] = stdout.trim().split('x').map(Number);
-    if (w && h) {
-      SCREEN.width = w;
-      SCREEN.height = h;
+
+  // Redimensionar para economizar tokens (manter aspect ratio)
+  const longSide = Math.max(SCREEN_W, SCREEN_H);
+  if (longSide > API_MAX_LONG) {
+    try {
+      await run(`convert "${raw}" -resize ${API_MAX_LONG}x${API_MAX_LONG} "${resized}"`);
+    } catch {
+      // Se convert falhar, usar original
+      fs.copyFileSync(raw, resized);
     }
-  } catch {}
-  
+  } else {
+    fs.copyFileSync(raw, resized);
+  }
+
+  const buf = fs.readFileSync(resized);
+  const base64 = buf.toString('base64');
+
+  // Limpar
+  try { fs.unlinkSync(raw); } catch {}
+  try { fs.unlinkSync(resized); } catch {}
+
   return {
     type: 'image',
     mediaType: 'image/png',
     data: base64,
-    width: SCREEN.width,
-    height: SCREEN.height
+    screenWidth: SCREEN_W,
+    screenHeight: SCREEN_H
   };
 }
 
-/**
- * Mover mouse para posição
- */
+// ----- Mouse -----
+
 async function mouseMove(x, y) {
-  await execAsync(`xdotool mousemove ${x} ${y}`);
+  await run(`xdotool mousemove ${Math.round(x)} ${Math.round(y)}`);
   return { success: true, action: 'mouse_move', x, y };
 }
 
-/**
- * Clicar com o mouse
- */
-async function mouseClick(button = 'left', clickCount = 1) {
-  const buttonMap = { left: 1, middle: 2, right: 3 };
-  const btn = buttonMap[button] || 1;
-  
-  let cmd = `xdotool click`;
-  if (clickCount > 1) {
-    cmd += ` --repeat ${clickCount} --delay 50`;
-  }
-  cmd += ` ${btn}`;
-  
-  await execAsync(cmd);
-  return { success: true, action: 'click', button, clickCount };
+async function mouseClick(button = 'left', count = 1) {
+  const btn = { left: 1, middle: 2, right: 3 }[button] || 1;
+  const repeat = count > 1 ? `--repeat ${count} --delay 80` : '';
+  await run(`xdotool click ${repeat} ${btn}`);
+  return { success: true, action: 'click', button, count };
 }
 
-/**
- * Pressionar e soltar botão do mouse
- */
-async function mouseDown(button = 'left') {
-  const buttonMap = { left: 1, middle: 2, right: 3 };
-  await execAsync(`xdotool mousedown ${buttonMap[button] || 1}`);
-  return { success: true, action: 'mouse_down', button };
-}
-
-async function mouseUp(button = 'left') {
-  const buttonMap = { left: 1, middle: 2, right: 3 };
-  await execAsync(`xdotool mouseup ${buttonMap[button] || 1}`);
-  return { success: true, action: 'mouse_up', button };
-}
-
-/**
- * Scroll do mouse
- */
 async function scroll(direction, amount = 3) {
   const btn = direction === 'up' ? 4 : 5;
-  await execAsync(`xdotool click --repeat ${amount} --delay 50 ${btn}`);
+  await run(`xdotool click --repeat ${amount} --delay 40 ${btn}`);
   return { success: true, action: 'scroll', direction, amount };
 }
 
-/**
- * Digitar texto
- */
+async function drag(sx, sy, ex, ey) {
+  await run(`xdotool mousemove ${sx} ${sy} mousedown 1 mousemove --sync ${ex} ${ey} mouseup 1`);
+  return { success: true, action: 'drag', from: [sx, sy], to: [ex, ey] };
+}
+
+async function getCursorPosition() {
+  const { stdout } = await run('xdotool getmouselocation --shell');
+  const xm = stdout.match(/X=(\d+)/);
+  const ym = stdout.match(/Y=(\d+)/);
+  return { x: xm ? +xm[1] : 0, y: ym ? +ym[1] : 0 };
+}
+
+// ----- Teclado -----
+
 async function typeText(text) {
-  // Escapar caracteres especiais
-  const escaped = text.replace(/'/g, "'\\''").replace(/"/g, '\\"');
-  await execAsync(`xdotool type --delay 12 '${escaped}'`);
-  return { success: true, action: 'type', length: text.length };
+  // xdotool type com --clearmodifiers evita interferência de teclas presas
+  // Usar stdin para evitar problemas de shell escaping
+  return new Promise((resolve, reject) => {
+    const child = exec('xdotool type --clearmodifiers --delay 12 --file -', { env: ENV }, (err) => {
+      if (err) reject(err);
+      else resolve({ success: true, action: 'type', length: text.length });
+    });
+    child.stdin.write(text);
+    child.stdin.end();
+  });
 }
 
-/**
- * Pressionar tecla
- */
 async function pressKey(key) {
-  const mappedKey = KEY_MAP[key] || key;
-  await execAsync(`xdotool key ${mappedKey}`);
-  return { success: true, action: 'key', key: mappedKey };
+  const k = mapKey(key);
+  await run(`xdotool key --clearmodifiers ${k}`);
+  return { success: true, action: 'key', key: k };
 }
 
-/**
- * Pressionar combinação de teclas
- */
 async function pressKeyCombo(keys) {
-  // keys é um array como ['ctrl', 'c'] ou uma string como 'ctrl+c'
   let combo;
   if (Array.isArray(keys)) {
-    combo = keys.map(k => KEY_MAP[k] || k).join('+');
+    combo = keys.map(mapKey).join('+');
   } else {
-    combo = keys.split('+').map(k => KEY_MAP[k.trim()] || k.trim()).join('+');
+    combo = keys.split('+').map(k => mapKey(k.trim())).join('+');
   }
-  
-  await execAsync(`xdotool key ${combo}`);
+  await run(`xdotool key --clearmodifiers ${combo}`);
   return { success: true, action: 'key_combo', combo };
 }
 
-/**
- * Arrastar mouse
- */
-async function drag(startX, startY, endX, endY) {
-  await execAsync(`xdotool mousemove ${startX} ${startY} mousedown 1 mousemove ${endX} ${endY} mouseup 1`);
-  return { success: true, action: 'drag', from: { x: startX, y: startY }, to: { x: endX, y: endY } };
-}
+// ----- Handler principal -----
 
-/**
- * Obter posição do cursor
- */
-async function getCursorPosition() {
-  const { stdout } = await execAsync("xdotool getmouselocation --shell");
-  const match = stdout.match(/X=(\d+)\nY=(\d+)/);
-  if (match) {
-    return { x: parseInt(match[1]), y: parseInt(match[2]) };
-  }
-  throw new Error('Não foi possível obter posição do cursor');
-}
-
-/**
- * Handler principal da ferramenta Computer
- */
 async function computerHandler(input) {
   const { action, coordinate, text, key } = input;
-  
+
   try {
     switch (action) {
       case 'screenshot':
         return await takeScreenshot();
-      
+
       case 'mouse_move':
-        if (!coordinate) throw new Error('coordinate é obrigatório para mouse_move');
+        if (!coordinate) throw new Error('coordinate [x,y] obrigatório');
         return await mouseMove(coordinate[0], coordinate[1]);
-      
+
       case 'left_click':
         if (coordinate) await mouseMove(coordinate[0], coordinate[1]);
         return await mouseClick('left', 1);
-      
+
       case 'right_click':
         if (coordinate) await mouseMove(coordinate[0], coordinate[1]);
         return await mouseClick('right', 1);
-      
+
       case 'middle_click':
         if (coordinate) await mouseMove(coordinate[0], coordinate[1]);
         return await mouseClick('middle', 1);
-      
+
       case 'double_click':
         if (coordinate) await mouseMove(coordinate[0], coordinate[1]);
         return await mouseClick('left', 2);
-      
+
       case 'triple_click':
         if (coordinate) await mouseMove(coordinate[0], coordinate[1]);
         return await mouseClick('left', 3);
-      
+
       case 'left_click_drag':
         if (!input.start_coordinate || !input.end_coordinate) {
-          throw new Error('start_coordinate e end_coordinate são obrigatórios');
+          throw new Error('start_coordinate e end_coordinate obrigatórios');
         }
         return await drag(
           input.start_coordinate[0], input.start_coordinate[1],
           input.end_coordinate[0], input.end_coordinate[1]
         );
-      
-      case 'scroll':
-        const direction = coordinate && coordinate[1] < 0 ? 'up' : 'down';
-        const amount = Math.abs(coordinate ? coordinate[1] : 3);
-        return await scroll(direction, Math.ceil(amount / 100) || 3);
-      
+
+      case 'scroll': {
+        const dir = input.direction || (coordinate && coordinate[1] < 0 ? 'up' : 'down');
+        const amt = input.amount || (coordinate ? Math.max(1, Math.ceil(Math.abs(coordinate[1]) / 100)) : 3);
+        if (coordinate) await mouseMove(coordinate[0], Math.abs(coordinate[1]) > 500 ? SCREEN_H / 2 : coordinate[1]);
+        return await scroll(dir, amt);
+      }
+
       case 'type':
-        if (!text) throw new Error('text é obrigatório para type');
+        if (!text) throw new Error('text obrigatório');
         return await typeText(text);
-      
+
       case 'key':
-        if (!key) throw new Error('key é obrigatório para key');
-        if (Array.isArray(key) || key.includes('+')) {
+        if (!key) throw new Error('key obrigatório');
+        if (Array.isArray(key) || (typeof key === 'string' && key.includes('+'))) {
           return await pressKeyCombo(key);
         }
         return await pressKey(key);
-      
+
       case 'cursor_position':
         return await getCursorPosition();
-      
+
       default:
         throw new Error(`Ação desconhecida: ${action}`);
     }
-  } catch (error) {
-    return { error: error.message, action };
+  } catch (err) {
+    return { error: err.message, action };
   }
 }
 
-/**
- * Definição da ferramenta para o Claude
- */
+// ----- Definição da ferramenta -----
+
 const computerTool = {
   name: 'computer',
-  description: `Controle o computador usando mouse, teclado e screenshots.
+  description: `Controla o computador via mouse, teclado e screenshots.
 
-Ações disponíveis:
-- screenshot: Captura a tela atual
-- mouse_move: Move o mouse para coordenadas [x, y]
-- left_click: Clique esquerdo (opcionalmente em coordenadas)
-- right_click: Clique direito
-- double_click: Duplo clique
-- triple_click: Triplo clique (seleciona linha)
-- left_click_drag: Arrasta de start_coordinate para end_coordinate
-- scroll: Rola a tela (coordinate[1] negativo = para cima)
-- type: Digita texto
-- key: Pressiona tecla ou combinação (ex: "Return", "ctrl+c", ["ctrl", "shift", "t"])
-- cursor_position: Retorna posição atual do cursor
+Ações:
+- screenshot: captura a tela (redimensionada automaticamente)
+- mouse_move: move cursor para coordinate [x,y]
+- left_click/right_click/middle_click: clique (opcionalmente em coordinate)
+- double_click/triple_click: clique múltiplo
+- left_click_drag: arrasta de start_coordinate para end_coordinate
+- scroll: rola (direction "up"/"down", amount = clicks)
+- type: digita texto
+- key: pressiona tecla ou combo (ex: "Return", "ctrl+c")
+- cursor_position: posição atual do cursor
 
-Sempre capture um screenshot antes de clicar para ver onde está o elemento.`,
-  
+IMPORTANTE: sempre tire screenshot antes de clicar para confirmar posições.`,
+
   inputSchema: {
     type: 'object',
     properties: {
@@ -291,51 +267,20 @@ Sempre capture um screenshot antes de clicar para ver onde está o elemento.`,
           'screenshot', 'mouse_move', 'left_click', 'right_click',
           'middle_click', 'double_click', 'triple_click', 'left_click_drag',
           'scroll', 'type', 'key', 'cursor_position'
-        ],
-        description: 'A ação a ser executada'
+        ]
       },
-      coordinate: {
-        type: 'array',
-        items: { type: 'integer' },
-        description: 'Coordenadas [x, y] para ações de mouse'
-      },
-      start_coordinate: {
-        type: 'array',
-        items: { type: 'integer' },
-        description: 'Coordenada inicial para drag'
-      },
-      end_coordinate: {
-        type: 'array',
-        items: { type: 'integer' },
-        description: 'Coordenada final para drag'
-      },
-      text: {
-        type: 'string',
-        description: 'Texto para digitar'
-      },
-      key: {
-        oneOf: [
-          { type: 'string' },
-          { type: 'array', items: { type: 'string' } }
-        ],
-        description: 'Tecla ou combinação de teclas'
-      }
+      coordinate: { type: 'array', items: { type: 'integer' }, description: '[x, y]' },
+      start_coordinate: { type: 'array', items: { type: 'integer' } },
+      end_coordinate: { type: 'array', items: { type: 'integer' } },
+      text: { type: 'string' },
+      key: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }] },
+      direction: { type: 'string', enum: ['up', 'down'] },
+      amount: { type: 'integer' }
     },
     required: ['action']
   },
-  
+
   handler: computerHandler
 };
 
-module.exports = {
-  computerTool,
-  takeScreenshot,
-  mouseMove,
-  mouseClick,
-  typeText,
-  pressKey,
-  pressKeyCombo,
-  scroll,
-  drag,
-  getCursorPosition
-};
+module.exports = { computerTool, takeScreenshot, mouseMove, mouseClick, typeText, pressKey, pressKeyCombo, scroll, drag, getCursorPosition };
