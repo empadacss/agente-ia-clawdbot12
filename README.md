@@ -1,194 +1,223 @@
-# 🧠 CLAUDE AGENT - Orange Pi 6 Plus
+# 🤖 Claude Agent - Orange Pi 6 Plus
 
-**Agente de IA de Próximo Nível** usando Claude API com Tool Use (Function Calling)
+**Agente Autônomo de Nível Profissional**
 
-> Controle total da Orange Pi 6 Plus 32GB via Telegram usando a inteligência do Claude
-
----
-
-## ✨ O que faz deste agente especial?
-
-Este não é um bot comum. É um **agente de IA real** que:
-
-- **🧠 Usa Claude API** - O modelo mais inteligente para entender comandos naturais
-- **🔧 Tool Use nativo** - Claude chama ferramentas diretamente, sem parsing
-- **👁️ Visão Computacional** - Analisa screenshots e entende o que está na tela
-- **🤖 Modo Autônomo** - Executa sequências complexas de ações sozinho
-- **💾 Memória** - Lembra do contexto da conversa
+Um agente de IA completo e autônomo powered by **Claude API** com **Tool Use** e **Vision**, capaz de controlar totalmente sua Orange Pi 6 Plus via Telegram.
 
 ---
 
-## 🎯 Capacidades
+## 🌟 Características
 
-### 🖱️ Mouse
-- Mover cursor para qualquer posição
-- Clicar (esquerdo, direito, duplo, triplo)
-- Scroll (cima, baixo)
-- Arrastar elementos
-- Obter posição atual
+### 🧠 Inteligência Real
+- **Claude API** - O cérebro mais avançado disponível
+- **Tool Use** - Claude decide e executa ações automaticamente
+- **Vision** - Analisa screenshots para verificar resultados
+- **Raciocínio Multi-step** - Planeja e executa tarefas complexas
+- **Memória Persistente** - Lembra de interações anteriores
 
-### ⌨️ Teclado
-- Digitar qualquer texto
-- Pressionar teclas (Enter, Esc, Tab, F1-F12...)
-- Combos (Ctrl+C, Alt+Tab, Ctrl+Shift+Esc...)
-- Atalhos pré-definidos (copiar, colar, salvar...)
+### 🖱️ Controle de Mouse
+- Mover cursor para qualquer posição (x, y)
+- Clique esquerdo, direito e duplo
+- Scroll para cima e para baixo
+- Arrastar elementos (drag and drop)
+- Obter posição atual do cursor
+
+### ⌨️ Controle de Teclado
+- Digitar texto
+- Pressionar teclas especiais (Enter, Esc, Tab, F1-F12, etc)
+- Combos de teclas (Ctrl+C, Ctrl+V, Alt+Tab, Super+D)
+- Atalhos personalizados
 
 ### 🚀 Aplicativos
-- Abrir qualquer programa
-- Abrir URLs e arquivos
+- Abrir qualquer programa pelo nome
 - Listar janelas abertas
-- Focar, minimizar, maximizar, fechar janelas
+- Focar em janelas específicas
+- Minimizar, maximizar, fechar janelas
+- Executar comandos no terminal
 
 ### 🌐 Web e Pesquisa
-- Pesquisar no Google
-- Pesquisar no YouTube
-- Pesquisar na Wikipedia
-- Pesquisar no Maps
-- Navegar em sites
+- Navegar para URLs
+- Pesquisa Google
+- Pesquisa YouTube
+- Interagir com páginas web
 
-### 📸 Tela
+### 📸 Visão Computacional
 - Capturar screenshots
-- Analisar visualmente (com Claude Vision)
-- Obter resolução
-- Informações da janela ativa
+- Analisar o que está na tela
+- Verificar resultados de ações
+- Processar imagens enviadas pelo usuário
 
 ### 📊 Sistema
-- Status (CPU, RAM, disco, temperatura)
-- Executar comandos no terminal
-- Listar processos
-- Controlar serviços systemd
-
-### 📍 GPIO
-- Controlar pinos de saída
-- Ler pinos de entrada
-- Automação física
+- Status completo (CPU, RAM, Disco, Temperatura)
+- Executar comandos
+- Gerenciar arquivos
+- Monitoramento em tempo real
 
 ---
 
-## 🚀 Instalação Rápida
-
-### Pré-requisitos
-
-1. **API Key do Claude** - Obtenha em [console.anthropic.com](https://console.anthropic.com/)
-2. **Token do Telegram** - Crie um bot com [@BotFather](https://t.me/BotFather)
-3. **Seu Chat ID** - Envie `/start` para [@userinfobot](https://t.me/userinfobot)
-
-### Comando de Instalação
-
-Cole este comando no terminal da Orange Pi:
+## ⚡ Instalação Rápida
 
 ```bash
-export ANTHROPIC_API_KEY="SUA_API_KEY_AQUI"
-export TELEGRAM_TOKEN="SEU_TOKEN_TELEGRAM"
-export ALLOWED_USERS="SEU_CHAT_ID"
-
-curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/scripts/install.sh | bash
+# Substitua pelos seus valores
+TELEGRAM_TOKEN="seu_token_telegram" \
+ANTHROPIC_API_KEY="sua_chave_claude" \
+ALLOWED_USERS="seu_chat_id" \
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/scripts/install.sh)"
 ```
 
-### Exemplo Completo
+### Obter suas credenciais:
 
-```bash
-export ANTHROPIC_API_KEY="sk-ant-api03-abc123..."
-export TELEGRAM_TOKEN="8342604056:AAGgB6WDFzD..."
-export ALLOWED_USERS="5075455416"
-
-curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/scripts/install.sh | bash
-```
+1. **Telegram Bot Token**: Fale com [@BotFather](https://t.me/BotFather) e crie um bot
+2. **Anthropic API Key**: Acesse [console.anthropic.com](https://console.anthropic.com/)
+3. **Chat ID**: Fale com [@userinfobot](https://t.me/userinfobot)
 
 ---
 
-## 💬 Como Usar
+## 📖 Como Usar
 
-Simplesmente **converse naturalmente** com o bot no Telegram!
+Apenas envie mensagens naturais descrevendo o que você quer:
 
-### Exemplos de comandos:
+### Exemplos
 
-```
-"Mova o mouse para o centro da tela"
-"Clique no canto superior direito"
-"Abra o navegador"
-"Pesquise no Google: previsão do tempo"
-"Tire um print da tela pra eu ver"
-"Qual o status do sistema?"
-"Pesquise no YouTube músicas relaxantes"
-"Digite: Olá mundo!"
-"Pressione Ctrl+C"
-"Minimize essa janela"
-"Liste todas as janelas abertas"
-"Execute o comando: ls -la"
-```
+| Comando | O que o agente faz |
+|---------|-------------------|
+| "Abra o navegador e pesquise sobre IA" | Abre Chrome, navega para Google, pesquisa |
+| "Tire um screenshot" | Captura e envia a tela atual |
+| "Abra o terminal e execute htop" | Abre terminal, digita htop, executa |
+| "Qual o status do sistema?" | Mostra CPU, RAM, Disco, Temperatura |
+| "Minimize todas as janelas" | Pressiona Super+D para mostrar desktop |
+| "Abra YouTube e pesquise música" | Navega para YouTube e pesquisa |
+| "Mova o mouse para 500, 300 e clique" | Move e clica na posição |
+| "Digite 'Hello World' e pressione Enter" | Digita o texto e pressiona Enter |
 
 ### Comandos Rápidos
 
 | Comando | Descrição |
 |---------|-----------|
-| `/start` | Ajuda completa |
-| `/tela` | Screenshot |
+| `/start` ou `/help` | Mostra ajuda |
+| `/tela` | Screenshot rápido |
 | `/status` | Status do sistema |
-| `/janelas` | Listar janelas |
-| `/limpar` | Limpar memória |
-| `/auto <objetivo>` | Modo autônomo |
-
-### Modo Autônomo
-
-O agente pode executar sequências complexas sozinho:
-
-```
-/auto Abra o terminal, execute htop e tire um print
-/auto Pesquise no Google "Orange Pi" e me mostre a tela
-/auto Abra o navegador, vá para youtube.com e pesquise música
-```
+| `/exec <cmd>` | Executar comando |
+| `/limpar` | Limpar histórico |
 
 ---
 
-## 📁 Estrutura do Projeto
+## 🏗️ Arquitetura
 
 ```
 claude-agent/
-├── index.js                 # Ponto de entrada principal
-├── package.json
-├── .env                     # Configurações (gerado na instalação)
-├── src/
-│   ├── agent/
-│   │   └── claude-agent.js  # Classe principal do agente Claude
-│   ├── tools/
-│   │   └── index.js         # Todas as ferramentas (Tool Use)
-│   └── telegram/
-│       └── bot.js           # Interface Telegram
+├── index.js              # Ponto de entrada principal
+├── agent/
+│   ├── core.js           # Núcleo do agente com loop agentic
+│   ├── tools.js          # Implementação de todas as ferramentas
+│   └── memory.js         # Sistema de memória persistente
+├── data/
+│   └── memory.json       # Memória persistente
 ├── scripts/
-│   └── install.sh           # Script de instalação
-└── README.md
+│   └── install.sh        # Script de instalação
+├── .env                  # Configurações (gerado na instalação)
+└── package.json
 ```
+
+### Fluxo de Funcionamento
+
+1. **Usuário envia mensagem** no Telegram
+2. **Claude recebe** a mensagem com contexto e ferramentas disponíveis
+3. **Claude decide** quais ferramentas usar e em que ordem
+4. **Agente executa** cada ferramenta e envia resultado de volta
+5. **Claude analisa** os resultados (incluindo screenshots)
+6. **Loop continua** até a tarefa estar completa
+7. **Resposta final** é enviada ao usuário
+
+---
+
+## 🔧 Ferramentas Disponíveis
+
+### Mouse
+| Ferramenta | Descrição |
+|------------|-----------|
+| `mouse_move` | Move cursor para (x, y) |
+| `mouse_click` | Clica (left/right/middle) |
+| `mouse_click_at` | Move e clica em (x, y) |
+| `mouse_scroll` | Scroll up/down |
+| `mouse_drag` | Arrasta de A para B |
+| `mouse_position` | Retorna posição atual |
+
+### Teclado
+| Ferramenta | Descrição |
+|------------|-----------|
+| `type_text` | Digita texto |
+| `press_key` | Pressiona tecla |
+| `press_combo` | Combo (ctrl+c) |
+
+### Aplicativos
+| Ferramenta | Descrição |
+|------------|-----------|
+| `open_application` | Abre programa |
+| `open_url` | Abre URL |
+| `run_command` | Executa comando |
+| `list_windows` | Lista janelas |
+| `focus_window` | Foca janela |
+| `close_window` | Fecha janela |
+| `minimize_window` | Minimiza |
+| `maximize_window` | Maximiza |
+
+### Tela
+| Ferramenta | Descrição |
+|------------|-----------|
+| `take_screenshot` | Captura tela (usado para verificar) |
+| `get_screen_resolution` | Resolução |
+| `get_active_window` | Janela ativa |
+
+### Sistema
+| Ferramenta | Descrição |
+|------------|-----------|
+| `get_system_status` | Status completo |
+| `list_files` | Lista diretório |
+| `read_file` | Lê arquivo |
+| `write_file` | Escreve arquivo |
+
+### Utilidades
+| Ferramenta | Descrição |
+|------------|-----------|
+| `wait` | Aguarda N segundos |
 
 ---
 
 ## ⚙️ Configuração
 
-### Variáveis de Ambiente
+### Variáveis de Ambiente (.env)
 
-| Variável | Descrição | Obrigatório |
-|----------|-----------|-------------|
-| `ANTHROPIC_API_KEY` | API Key do Claude | ✅ |
-| `TELEGRAM_BOT_TOKEN` | Token do bot Telegram | ✅ |
-| `TELEGRAM_ALLOWED_CHAT_ID` | IDs permitidos (separados por vírgula) | Opcional |
-| `CLAUDE_MODEL` | Modelo a usar (padrão: claude-sonnet-4-20250514) | Opcional |
+```env
+# Telegram
+TELEGRAM_BOT_TOKEN=seu_token
+ALLOWED_USERS=seu_chat_id
 
-### Modelos Disponíveis
+# Claude
+ANTHROPIC_API_KEY=sua_chave
+CLAUDE_MODEL=claude-sonnet-4-20250514
+MAX_TOKENS=8192
+MAX_ITERATIONS=20
+```
 
-- `claude-sonnet-4-20250514` (recomendado - rápido e inteligente)
-- `claude-opus-4-20250514` (mais inteligente, mais lento)
-- `claude-3-5-sonnet-20241022` (anterior, mais barato)
+### Modelos Claude Disponíveis
+
+| Modelo | Descrição |
+|--------|-----------|
+| `claude-sonnet-4-20250514` | Balanceado (recomendado) |
+| `claude-opus-4-20250514` | Mais capaz, mais lento |
+| `claude-3-5-haiku-20241022` | Mais rápido, econômico |
 
 ---
 
-## 🔧 Gerenciamento
+## 📊 Gerenciamento
 
-### Ver status
+### Ver Status
 ```bash
 sudo systemctl status claude-agent
 ```
 
-### Ver logs
+### Ver Logs
 ```bash
 sudo journalctl -u claude-agent -f
 ```
@@ -203,44 +232,42 @@ sudo systemctl restart claude-agent
 sudo systemctl stop claude-agent
 ```
 
-### Executar manualmente (debug)
-```bash
-cd ~/claude-agent
-node index.js
-```
+---
+
+## 🔐 Segurança
+
+- **ALLOWED_USERS**: Restrinja o acesso apenas ao seu chat ID
+- **API Keys**: Nunca compartilhe suas chaves
+- **Sudoers**: Comandos sensíveis requerem confirmação
 
 ---
 
-## 🔒 Segurança
+## 🚀 Performance
 
-- Apenas usuários na lista `ALLOWED_USERS` podem usar o bot
-- Comandos perigosos são bloqueados (rm -rf /, mkfs, etc)
-- API key nunca é exposta nas respostas
+O agente foi otimizado para Orange Pi 6 Plus (32GB):
+- Loop agentic eficiente
+- Memória persistente em JSON
+- Screenshots comprimidos
+- Timeout em comandos longos
 
 ---
 
-## 🤝 Contribuindo
+## 📝 Licença
 
-1. Fork o repositório
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
+MIT License
+
+---
+
+## 🤝 Contribuições
+
+Pull requests são bem-vindos!
+
+1. Fork o projeto
+2. Crie sua branch (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
 ---
 
-## 📄 Licença
-
-MIT License - Veja [LICENSE](LICENSE) para detalhes.
-
----
-
-## 🙏 Créditos
-
-- [Anthropic Claude API](https://anthropic.com)
-- [Node Telegram Bot API](https://github.com/yagop/node-telegram-bot-api)
-- [xdotool](https://github.com/jordansissel/xdotool)
-
----
-
-**Feito com 🧠 usando Claude AI**
+**Desenvolvido com ❤️ para Orange Pi 6 Plus**

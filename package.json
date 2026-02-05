@@ -1,7 +1,7 @@
 {
   "name": "claude-agent-orangepi",
   "version": "3.0.0",
-  "description": "Agente de IA de próximo nível para Orange Pi 6 Plus usando Claude API com Tool Use",
+  "description": "Agente Autônomo de Nível Profissional para Orange Pi 6 Plus - Powered by Claude API",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -9,16 +9,16 @@
     "install-agent": "bash scripts/install.sh"
   },
   "keywords": [
-    "orangepi",
     "claude",
     "anthropic",
     "ai-agent",
-    "automation",
+    "autonomous",
+    "orangepi",
     "telegram",
-    "mouse-control",
-    "keyboard-control",
+    "automation",
+    "computer-use",
     "tool-use",
-    "function-calling"
+    "vision"
   ],
   "author": "empadacss",
   "license": "MIT",
@@ -27,10 +27,9 @@
     "url": "https://github.com/empadacss/agente-ia-clawdbot12.git"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.32.0",
+    "@anthropic-ai/sdk": "^0.32.1",
     "dotenv": "^16.4.5",
-    "node-telegram-bot-api": "^0.66.0",
-    "puppeteer": "^22.0.0"
+    "node-telegram-bot-api": "^0.66.0"
   },
   "engines": {
     "node": ">=20.0.0"
