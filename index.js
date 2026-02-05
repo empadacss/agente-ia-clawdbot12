@@ -2,86 +2,87 @@
 
 /**
  * ============================================
- * 🤖 CLAUDE AGENT - Orange Pi 6 Plus
+ * 🤖 CLAUDE AGENT - ORANGE PI 6 PLUS
  * ============================================
+ * Agente de IA de nível empresarial
+ * Powered by Claude API com Computer Use
  * 
- * Agente Autônomo de Nível Profissional
- * Powered by Claude API
- * 
- * Capacidades:
- * - 🖱️ Controle total de mouse
- * - ⌨️ Controle total de teclado
- * - 🚀 Abrir e gerenciar aplicativos
- * - 🌐 Navegar e pesquisar na web
- * - 📸 Visão computacional (screenshots)
- * - 🧠 Raciocínio e planejamento avançado
- * - 📊 Monitoramento de sistema
- * - 🔄 Execução autônoma de tarefas
- * 
+ * Funcionalidades:
+ * - 🧠 Claude API (Anthropic) como cérebro
+ * - 🖥️ Computer Use (ver tela, controlar mouse/teclado)
+ * - 💻 Terminal/Bash
+ * - 📝 Editor de arquivos
+ * - 🌐 Navegação web
+ * - 📱 Interface via Telegram
  * ============================================
  */
 
 require('dotenv').config();
 
 const TelegramBot = require('node-telegram-bot-api');
-const ClaudeAgent = require('./agent/core');
 const fs = require('fs');
 const path = require('path');
+
+// Core
+const ClaudeAgent = require('./src/core/agent');
+
+// Tools
+const { computerTool } = require('./src/tools/computer');
+const { bashTool } = require('./src/tools/bash');
+const { editorTool } = require('./src/tools/editor');
+const { browserTool } = require('./src/tools/browser');
 
 // ============================================
 // CONFIGURAÇÃO
 // ============================================
 
 const CONFIG = {
-  // Telegram
-  telegramToken: process.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_TOKEN || '',
-  allowedUsers: (process.env.TELEGRAM_ALLOWED_USERS || process.env.ALLOWED_USERS || '').split(',').filter(Boolean),
-  
-  // Claude
+  // Anthropic
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
   claudeModel: process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514',
-  maxTokens: parseInt(process.env.MAX_TOKENS) || 8192,
-  maxIterations: parseInt(process.env.MAX_ITERATIONS) || 20
+  
+  // Telegram
+  telegramToken: process.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_TOKEN || '',
+  allowedUsers: (process.env.TELEGRAM_ALLOWED_CHAT_ID || process.env.ALLOWED_USERS || '').split(',').filter(Boolean),
+  
+  // Agente
+  maxIterations: parseInt(process.env.MAX_ITERATIONS) || 25,
+  maxTokens: parseInt(process.env.MAX_TOKENS) || 8192
 };
+
+// Validação
+if (!CONFIG.anthropicApiKey) {
+  console.error('❌ ANTHROPIC_API_KEY não configurada!');
+  process.exit(1);
+}
+
+if (!CONFIG.telegramToken) {
+  console.error('❌ TELEGRAM_BOT_TOKEN não configurada!');
+  process.exit(1);
+}
 
 // ============================================
 // BANNER
 // ============================================
 
 console.log('');
-console.log('╔════════════════════════════════════════════════════════════╗');
-console.log('║                                                            ║');
-console.log('║   🤖 CLAUDE AGENT - Orange Pi 6 Plus                       ║');
-console.log('║                                                            ║');
-console.log('║   Agente Autônomo de Nível Profissional                    ║');
-console.log('║   Powered by Claude API + Tool Use + Vision                ║');
-console.log('║                                                            ║');
-console.log('╚════════════════════════════════════════════════════════════╝');
+console.log('╔════════════════════════════════════════════════════════════════╗');
+console.log('║                                                                ║');
+console.log('║   🤖 CLAUDE AGENT - Orange Pi 6 Plus                           ║');
+console.log('║                                                                ║');
+console.log('║   Powered by Claude API + Computer Use                         ║');
+console.log('║                                                                ║');
+console.log('║   🧠 Claude Sonnet | 🖥️ Computer | 💻 Bash | 🌐 Browser        ║');
+console.log('║                                                                ║');
+console.log('╚════════════════════════════════════════════════════════════════╝');
+console.log('');
+console.log(`📱 Usuários permitidos: ${CONFIG.allowedUsers.join(', ') || 'TODOS'}`);
+console.log(`🧠 Modelo: ${CONFIG.claudeModel}`);
+console.log(`🔄 Max iterações: ${CONFIG.maxIterations}`);
 console.log('');
 
 // ============================================
-// VALIDAÇÃO
-// ============================================
-
-if (!CONFIG.telegramToken) {
-  console.error('❌ TELEGRAM_BOT_TOKEN não configurado!');
-  console.error('   Defina a variável de ambiente TELEGRAM_BOT_TOKEN');
-  process.exit(1);
-}
-
-if (!CONFIG.anthropicApiKey) {
-  console.error('❌ ANTHROPIC_API_KEY não configurado!');
-  console.error('   Defina a variável de ambiente ANTHROPIC_API_KEY');
-  process.exit(1);
-}
-
-console.log(`📱 Telegram: ${CONFIG.allowedUsers.length > 0 ? CONFIG.allowedUsers.join(', ') : 'TODOS (sem restrição)'}`);
-console.log(`🧠 Claude: ${CONFIG.claudeModel}`);
-console.log(`🔧 Max Iterações: ${CONFIG.maxIterations}`);
-console.log('');
-
-// ============================================
-// INICIALIZAR AGENTE E BOT
+// INICIALIZAR AGENTE
 // ============================================
 
 const agent = new ClaudeAgent({
@@ -91,15 +92,55 @@ const agent = new ClaudeAgent({
   maxIterations: CONFIG.maxIterations
 });
 
+// Registrar ferramentas
+agent.registerTool('computer', computerTool);
+agent.registerTool('bash', bashTool);
+agent.registerTool('str_replace_editor', editorTool);
+agent.registerTool('browser', browserTool);
+
+// Eventos do agente
+agent.on('tool:executing', ({ name, input }) => {
+  console.log(`🔧 Executando: ${name}`, JSON.stringify(input).slice(0, 100));
+});
+
+agent.on('tool:executed', ({ name, result }) => {
+  const resultPreview = typeof result === 'object' 
+    ? (result.type === 'image' ? '[screenshot]' : JSON.stringify(result).slice(0, 100))
+    : String(result).slice(0, 100);
+  console.log(`✅ ${name}:`, resultPreview);
+});
+
+agent.on('iteration:start', ({ iteration }) => {
+  console.log(`🔄 Iteração ${iteration}`);
+});
+
+agent.on('error', (error) => {
+  console.error('❌ Erro:', error.message);
+});
+
+// ============================================
+// INICIALIZAR TELEGRAM BOT
+// ============================================
+
 const bot = new TelegramBot(CONFIG.telegramToken, { polling: true });
 
-// ============================================
-// FUNÇÕES AUXILIARES
-// ============================================
+// Estado por chat
+const chatState = new Map();
+
+function getChatState(chatId) {
+  if (!chatState.has(chatId)) {
+    chatState.set(chatId, {
+      isProcessing: false,
+      taskCount: 0
+    });
+  }
+  return chatState.get(chatId);
+}
 
 function isAllowed(userId) {
-  if (CONFIG.allowedUsers.length === 0) return true;
-  if (CONFIG.allowedUsers.includes('*')) return true;
+  if (CONFIG.allowedUsers.length === 0 || CONFIG.allowedUsers.includes('*')) {
+    return true;
+  }
   return CONFIG.allowedUsers.includes(userId.toString());
 }
 
@@ -107,217 +148,248 @@ async function sendTyping(chatId) {
   try { await bot.sendChatAction(chatId, 'typing'); } catch {}
 }
 
-async function sendPhoto(chatId) {
-  try { await bot.sendChatAction(chatId, 'upload_photo'); } catch {}
-}
-
-// Dividir mensagens longas
-function splitMessage(text, maxLength = 4000) {
-  if (text.length <= maxLength) return [text];
+async function sendLongMessage(chatId, text, options = {}) {
+  const MAX_LENGTH = 4000;
   
-  const parts = [];
-  let current = '';
-  
-  const lines = text.split('\n');
-  for (const line of lines) {
-    if ((current + '\n' + line).length > maxLength) {
-      if (current) parts.push(current);
-      current = line;
-    } else {
-      current = current ? current + '\n' + line : line;
-    }
+  if (text.length <= MAX_LENGTH) {
+    return await bot.sendMessage(chatId, text, options);
   }
-  if (current) parts.push(current);
   
-  return parts;
+  // Dividir mensagem
+  const parts = [];
+  let remaining = text;
+  
+  while (remaining.length > 0) {
+    if (remaining.length <= MAX_LENGTH) {
+      parts.push(remaining);
+      break;
+    }
+    
+    // Tentar quebrar em nova linha
+    let breakPoint = remaining.lastIndexOf('\n', MAX_LENGTH);
+    if (breakPoint < MAX_LENGTH / 2) {
+      breakPoint = MAX_LENGTH;
+    }
+    
+    parts.push(remaining.slice(0, breakPoint));
+    remaining = remaining.slice(breakPoint);
+  }
+  
+  for (const part of parts) {
+    await bot.sendMessage(chatId, part, options);
+  }
 }
 
 // ============================================
 // HANDLERS TELEGRAM
 // ============================================
 
-// Comando /start
-bot.onText(/^\/(start|help|ajuda)$/i, async (msg) => {
+// /start
+bot.onText(/^\/start$/i, async (msg) => {
+  const chatId = msg.chat.id;
+  
   if (!isAllowed(msg.from.id)) {
-    return bot.sendMessage(msg.chat.id, `❌ Acesso negado.\nSeu ID: ${msg.from.id}`);
+    return bot.sendMessage(chatId, `❌ Acesso negado.\n\nSeu ID: \`${msg.from.id}\``, { parse_mode: 'Markdown' });
   }
   
-  const help = `🤖 *CLAUDE AGENT - Orange Pi 6 Plus*
+  const welcome = `🤖 *CLAUDE AGENT - Orange Pi 6 Plus*
 
-Sou um agente autônomo avançado powered by Claude.
-Posso executar tarefas complexas de forma inteligente.
+Olá! Sou um agente de IA avançado com *controle total* do sistema.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-*O QUE POSSO FAZER:*
+🧠 *Powered by Claude (Anthropic)*
+Posso entender linguagem natural e executar tarefas complexas de forma autônoma.
 
-🖱️ *Mouse* - Mover, clicar, scroll, arrastar
-⌨️ *Teclado* - Digitar, teclas, combos
-🚀 *Apps* - Abrir programas, gerenciar janelas
-🌐 *Web* - Navegar, pesquisar, interagir
-📸 *Visão* - Ver e analisar a tela
-📊 *Sistema* - Monitorar, executar comandos
-🔄 *Automação* - Tarefas multi-step
+🖥️ *Computer Use*
+Posso ver a tela, mover mouse, clicar e digitar.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+💻 *Terminal*
+Posso executar qualquer comando bash.
 
-*COMO USAR:*
+📝 *Editor*
+Posso criar e editar arquivos.
 
-Apenas me diga o que você quer fazer!
+🌐 *Browser*
+Posso navegar na internet e pesquisar.
 
-Exemplos:
-• "Abra o navegador e pesquise sobre IA"
-• "Tire um screenshot e me mostre"
-• "Abra o terminal e rode htop"
-• "Qual o status do sistema?"
-• "Minimize todas as janelas"
-• "Abra o YouTube e pesquise música"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 *COMANDOS:*
+/screenshot - Captura a tela
+/status - Status do agente
+/clear - Limpa histórico
+/help - Esta mensagem
 
-/tela - Screenshot da tela
-/status - Status do sistema
-/limpar - Limpar histórico
-/help - Esta ajuda
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━
+*COMO USAR:*
+Apenas me diga o que você quer fazer em linguagem natural!
 
-💡 Dica: Seja específico! Quanto mais detalhes, melhor executo a tarefa.`;
+Exemplos:
+• "Abra o navegador e pesquise sobre Linux"
+• "Crie um arquivo Python que calcule fatorial"
+• "Mostre o uso de CPU e memória"
+• "Abra o terminal e instale htop"
+• "Clique no ícone do menu"
 
-  await bot.sendMessage(msg.chat.id, help, { parse_mode: 'Markdown' });
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Modelo: \`${CONFIG.claudeModel}\``;
+
+  await bot.sendMessage(chatId, welcome, { parse_mode: 'Markdown' });
 });
 
-// Comando /tela - Screenshot rápido
-bot.onText(/^\/(tela|screenshot|ss|print)$/i, async (msg) => {
+// /help
+bot.onText(/^\/help$/i, async (msg) => {
+  bot.emit('text', { ...msg, text: '/start' });
+});
+
+// /screenshot
+bot.onText(/^\/screenshot$/i, async (msg) => {
+  const chatId = msg.chat.id;
   if (!isAllowed(msg.from.id)) return;
   
-  await sendPhoto(msg.chat.id);
-  
   try {
-    const tools = require('./agent/tools');
-    const result = await tools.execute('take_screenshot', {});
+    await bot.sendChatAction(chatId, 'upload_photo');
+    
+    const { takeScreenshot } = require('./src/tools/computer');
+    const result = await takeScreenshot();
     
     if (result.type === 'image') {
       const buffer = Buffer.from(result.data, 'base64');
-      await bot.sendPhoto(msg.chat.id, buffer, { caption: '📸 Screenshot atual' });
+      await bot.sendPhoto(chatId, buffer, { caption: '📸 Screenshot' });
     } else {
-      await bot.sendMessage(msg.chat.id, result.error || 'Erro ao capturar tela');
+      await bot.sendMessage(chatId, '❌ Erro ao capturar tela');
     }
   } catch (error) {
-    await bot.sendMessage(msg.chat.id, `❌ Erro: ${error.message}`);
+    await bot.sendMessage(chatId, `❌ Erro: ${error.message}`);
   }
 });
 
-// Comando /status
+// /status
 bot.onText(/^\/status$/i, async (msg) => {
+  const chatId = msg.chat.id;
   if (!isAllowed(msg.from.id)) return;
   
-  await sendTyping(msg.chat.id);
+  const status = agent.getStatus();
+  const state = getChatState(chatId);
   
-  try {
-    const tools = require('./agent/tools');
-    const result = await tools.execute('get_system_status', {});
-    await bot.sendMessage(msg.chat.id, result);
-  } catch (error) {
-    await bot.sendMessage(msg.chat.id, `❌ Erro: ${error.message}`);
-  }
+  const { executeBash } = require('./src/tools/bash');
+  const cpuResult = await executeBash("top -bn1 | grep 'Cpu(s)' | awk '{print int($2+$4)}'");
+  const memResult = await executeBash("free -m | awk 'NR==2{printf \"%d/%dMB (%.1f%%)\", $3,$2,$3*100/$2}'");
+  const tempResult = await executeBash("cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null | awk '{printf \"%.1f\", $1/1000}'");
+  
+  const statusText = `📊 *STATUS DO AGENTE*
+
+🤖 *Agente*
+├ Modelo: ${status.model}
+├ Ferramentas: ${status.toolsCount}
+├ Memória: ${status.memorySize} mensagens
+└ Processando: ${status.isRunning ? '✅ Sim' : '❌ Não'}
+
+🖥️ *Sistema*
+├ CPU: ${cpuResult.output || 'N/A'}%
+├ RAM: ${memResult.output || 'N/A'}
+└ Temp: ${tempResult.output || 'N/A'}°C
+
+📱 *Sessão*
+└ Tarefas executadas: ${state.taskCount}`;
+
+  await bot.sendMessage(chatId, statusText, { parse_mode: 'Markdown' });
 });
 
-// Comando /limpar
-bot.onText(/^\/(limpar|clear|reset)$/i, async (msg) => {
+// /clear
+bot.onText(/^\/clear$/i, async (msg) => {
+  const chatId = msg.chat.id;
   if (!isAllowed(msg.from.id)) return;
   
-  agent.clearHistory();
-  const memory = require('./agent/memory');
-  await memory.clear(msg.chat.id.toString());
-  
-  await bot.sendMessage(msg.chat.id, '🗑️ Histórico e memória limpos');
+  agent.clearMemory();
+  await bot.sendMessage(chatId, '🗑️ Histórico de conversa limpo');
 });
 
-// Comando /exec - Executar comando direto
-bot.onText(/^\/exec (.+)$/i, async (msg, match) => {
+// /stop
+bot.onText(/^\/stop$/i, async (msg) => {
+  const chatId = msg.chat.id;
   if (!isAllowed(msg.from.id)) return;
   
-  await sendTyping(msg.chat.id);
-  
-  try {
-    const tools = require('./agent/tools');
-    const result = await tools.execute('run_command', { command: match[1] });
-    
-    const parts = splitMessage(`\`\`\`\n${result}\n\`\`\``);
-    for (const part of parts) {
-      await bot.sendMessage(msg.chat.id, part, { parse_mode: 'Markdown' });
-    }
-  } catch (error) {
-    await bot.sendMessage(msg.chat.id, `❌ Erro: ${error.message}`);
+  const state = getChatState(chatId);
+  if (state.isProcessing) {
+    state.shouldStop = true;
+    await bot.sendMessage(chatId, '⏹️ Parando tarefa...');
+  } else {
+    await bot.sendMessage(chatId, 'ℹ️ Nenhuma tarefa em execução');
   }
 });
 
 // ============================================
-// HANDLER PRINCIPAL - AGENTE AUTÔNOMO
+// HANDLER PRINCIPAL - MENSAGENS
 // ============================================
 
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text || '';
-  const userId = msg.from.id;
   
   // Ignorar comandos
   if (text.startsWith('/')) return;
   
   // Verificar permissão
-  if (!isAllowed(userId)) {
-    return bot.sendMessage(chatId, `❌ Acesso negado. Seu ID: ${userId}`);
-  }
+  if (!isAllowed(msg.from.id)) return;
   
   // Ignorar mensagens vazias
   if (!text.trim()) return;
   
-  console.log(`\n${'='.repeat(60)}`);
-  console.log(`📩 [${userId}] ${text}`);
-  console.log(`${'='.repeat(60)}`);
+  const state = getChatState(chatId);
   
-  // Enviar indicador de digitação
-  await sendTyping(chatId);
+  // Verificar se já está processando
+  if (state.isProcessing) {
+    await bot.sendMessage(chatId, '⏳ Aguarde, ainda estou processando a tarefa anterior...\n\nUse /stop para cancelar.');
+    return;
+  }
   
-  // Configurar intervalo para manter "digitando" ativo
-  const typingInterval = setInterval(() => sendTyping(chatId), 4000);
+  state.isProcessing = true;
+  state.taskCount++;
+  
+  console.log(`\n📩 [${msg.from.id}] ${text.slice(0, 100)}...`);
+  
+  // Mensagem de processamento
+  const processingMsg = await bot.sendMessage(chatId, '🤔 Pensando...');
   
   try {
-    // Notificar início do processamento
-    const processingMsg = await bot.sendMessage(chatId, '🧠 Processando sua solicitação...');
+    await sendTyping(chatId);
     
-    // Executar agente
-    const response = await agent.processMessage(text, chatId.toString());
+    // Processar com o agente
+    const result = await agent.processMessage(text);
     
     // Deletar mensagem de processamento
     try { await bot.deleteMessage(chatId, processingMsg.message_id); } catch {}
     
-    // Enviar resposta
-    if (response) {
-      const parts = splitMessage(response);
-      for (const part of parts) {
-        await bot.sendMessage(chatId, part, { parse_mode: 'Markdown' }).catch(() => {
-          // Se falhar com Markdown, enviar sem formatação
-          bot.sendMessage(chatId, part);
-        });
-      }
+    if (result.response) {
+      await sendLongMessage(chatId, result.response);
+      console.log(`📤 Resposta enviada (${result.iterations} iterações)`);
+    } else {
+      await bot.sendMessage(chatId, '✅ Tarefa concluída');
     }
-    
-    console.log('✅ Resposta enviada');
     
   } catch (error) {
     console.error('❌ Erro:', error);
-    await bot.sendMessage(chatId, `❌ Erro: ${error.message}`);
+    
+    try { await bot.deleteMessage(chatId, processingMsg.message_id); } catch {}
+    
+    let errorMsg = `❌ Erro: ${error.message}`;
+    
+    if (error.message.includes('API')) {
+      errorMsg += '\n\nVerifique sua ANTHROPIC_API_KEY.';
+    }
+    
+    await bot.sendMessage(chatId, errorMsg);
   } finally {
-    clearInterval(typingInterval);
+    state.isProcessing = false;
   }
 });
 
 // ============================================
-// HANDLER DE FOTOS (Visão)
+// HANDLER DE FOTOS
 // ============================================
 
 bot.on('photo', async (msg) => {
@@ -325,15 +397,15 @@ bot.on('photo', async (msg) => {
   
   if (!isAllowed(msg.from.id)) return;
   
-  await sendTyping(chatId);
+  const caption = msg.caption || 'O que você vê nesta imagem?';
   
   try {
-    // Pegar a maior resolução da foto
+    // Obter maior resolução
     const photo = msg.photo[msg.photo.length - 1];
     const file = await bot.getFile(photo.file_id);
     const fileUrl = `https://api.telegram.org/file/bot${CONFIG.telegramToken}/${file.file_path}`;
     
-    // Baixar a imagem
+    // Baixar imagem
     const https = require('https');
     const imageBuffer = await new Promise((resolve, reject) => {
       https.get(fileUrl, (res) => {
@@ -344,68 +416,44 @@ bot.on('photo', async (msg) => {
       });
     });
     
-    const base64Image = imageBuffer.toString('base64');
-    const caption = msg.caption || 'O que você vê nesta imagem?';
+    const base64 = imageBuffer.toString('base64');
     
-    // Processar com Claude Vision
-    const Anthropic = require('@anthropic-ai/sdk');
-    const client = new Anthropic({ apiKey: CONFIG.anthropicApiKey });
+    // Enviar para o agente com a imagem
+    // (Nota: isso requer suporte a imagens no agent.processMessage)
+    await bot.sendMessage(chatId, '📸 Imagem recebida! Analisando...');
     
-    const response = await client.messages.create({
-      model: CONFIG.claudeModel,
-      max_tokens: 2048,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: 'image/jpeg',
-              data: base64Image
-            }
-          },
-          {
-            type: 'text',
-            text: caption
-          }
-        ]
-      }]
-    });
-    
-    const textResponse = response.content[0].text;
-    await bot.sendMessage(chatId, textResponse);
+    // Por enquanto, apenas confirmar recebimento
+    await bot.sendMessage(chatId, `Recebi a imagem. "${caption}"\n\nPara análise de imagens da tela, use /screenshot e me pergunte sobre o que você vê.`);
     
   } catch (error) {
-    console.error('Erro ao processar imagem:', error);
-    await bot.sendMessage(chatId, `❌ Erro ao analisar imagem: ${error.message}`);
+    await bot.sendMessage(chatId, `❌ Erro ao processar imagem: ${error.message}`);
   }
 });
 
 // ============================================
-// INICIALIZAÇÃO
+// GRACEFUL SHUTDOWN
+// ============================================
+
+process.on('SIGINT', async () => {
+  console.log('\n👋 Encerrando...');
+  
+  try {
+    const { closeBrowser } = require('./src/tools/browser');
+    await closeBrowser();
+  } catch {}
+  
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  console.log('\n👋 Encerrando...');
+  process.exit(0);
+});
+
+// ============================================
+// INICIALIZAÇÃO COMPLETA
 // ============================================
 
 console.log('✅ Claude Agent iniciado!');
-console.log('🤖 Aguardando mensagens no Telegram...');
+console.log('📱 Aguardando mensagens no Telegram...');
 console.log('');
-
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\n👋 Encerrando...');
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('\n👋 Encerrando...');
-  process.exit(0);
-});
-
-// Tratar erros não capturados
-process.on('uncaughtException', (error) => {
-  console.error('Erro não capturado:', error);
-});
-
-process.on('unhandledRejection', (error) => {
-  console.error('Promise rejeitada:', error);
-});

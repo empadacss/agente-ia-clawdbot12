@@ -1,14 +1,9 @@
 # Dependências
 node_modules/
 
-# Environment
+# Ambiente
 .env
 .env.local
-.env.production
-
-# Dados locais
-data/
-*.json.bak
 
 # Logs
 *.log
@@ -21,14 +16,22 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
+
+# Temporários
+tmp/
+temp/
+*.tmp
 
 # Build
 dist/
 build/
 
-# Temp
-tmp/
-temp/
-*.tmp
+# Cache
+.cache/
+.npm/
+
+# Screenshots temporários
+/tmp/
+
+# Puppeteer
+.local-chromium/
