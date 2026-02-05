@@ -3,209 +3,130 @@
 [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
 [![Telegram](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://core.telegram.org/bots)
 [![Ollama](https://img.shields.io/badge/Ollama-Local_LLM-orange.svg)](https://ollama.com/)
-[![ARM64](https://img.shields.io/badge/ARM64-RK3588-red.svg)](https://www.orangepi.org/)
 
-Bot de Telegram que roda **100% localmente** na Orange Pi 6 Plus 32GB, com **controle total** do sistema via IA local.
+**Controle completo** da Orange Pi 6 Plus via Telegram com **foco em Mouse e Teclado**.
 
 ---
 
-## ✨ Funcionalidades Completas
+## ✨ Funcionalidades Principais
 
 | Categoria | Funcionalidades |
 |-----------|-----------------|
-| 🧠 **IA Local** | Chat com LLM via Ollama, contexto de conversa, sugestões de comandos |
-| 📊 **Monitoramento** | CPU, RAM, disco, temperatura, processos, load average |
-| 💻 **Terminal** | Execução segura de comandos, bloqueio de comandos perigosos |
-| 📍 **GPIO** | Controle de pinos físicos (entrada/saída) |
-| 🌐 **Rede** | Configuração WiFi, scan de redes, IP público, interfaces |
-| ⚙️ **Serviços** | Gerenciamento completo de serviços systemd |
-| 🐳 **Docker** | Listar, iniciar, parar, logs de containers |
-| ⏰ **Automação** | Agendamento de tarefas com cron |
-| 📦 **Backup** | Backup e restore de diretórios |
-| 🔌 **Energia** | Shutdown, reboot com confirmação |
-| 🌐 **Navegador** | Abrir URLs, screenshots via Puppeteer |
-| ⚠️ **Alertas** | Monitoramento automático com notificações |
+| 🖱️ **Mouse** | Mover, clicar, duplo clique, scroll, arrastar |
+| ⌨️ **Teclado** | Digitar, teclas especiais, atalhos, combos |
+| 📸 **Tela** | Screenshots em tempo real, listar janelas, focar |
+| 🧠 **IA Local** | Chat com LLM via Ollama |
+| 📍 **GPIO** | Controle de pinos físicos |
+| 💻 **Sistema** | Monitoramento, comandos shell |
 
 ---
 
-## 🚀 Instalação Rápida
-
-### Comando único (recomendado):
+## 🚀 Instalação
 
 ```bash
-TELEGRAM_TOKEN="seu_token_aqui" \
+TELEGRAM_TOKEN="seu_token" \
 ALLOWED_USERS="seu_chat_id" \
 OLLAMA_MODEL="llama3.1:8b" \
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/bot/install.sh)"
 ```
 
-### Ou manualmente:
+---
 
-```bash
-git clone https://github.com/empadacss/agente-ia-clawdbot12.git
-cd agente-ia-clawdbot12/bot
-TELEGRAM_TOKEN="seu_token" ALLOWED_USERS="seu_id" ./install.sh
-```
+## 🖱️ Comandos de Mouse
+
+| Comando | Descrição |
+|---------|-----------|
+| `/mouse X Y` | Mover para posição |
+| `/mouse` | Ver posição atual |
+| `/mrel X Y` | Movimento relativo |
+| `/click` | Clique esquerdo |
+| `/click r` | Clique direito |
+| `/click X Y` | Clicar em posição |
+| `/dclick` | Duplo clique |
+| `/rclick` | Clique direito |
+| `/scroll up` | Rolar para cima |
+| `/scroll down` | Rolar para baixo |
+| `/arrastar X1 Y1 X2 Y2` | Arrastar |
 
 ---
 
-## 📱 Comandos Disponíveis
+## ⌨️ Comandos de Teclado
 
-### 📊 Sistema
 | Comando | Descrição |
 |---------|-----------|
-| `/status` | Status completo do sistema |
-| `/cpu` | Uso da CPU e load |
-| `/ram` | Uso de memória |
-| `/temp` | Temperatura da CPU |
-| `/disco` | Uso do disco |
-| `/processos` | Top processos por RAM |
-| `/uptime` | Tempo ligado |
+| `/digitar texto` | Digitar texto |
+| `/tecla enter` | Pressionar Enter |
+| `/tecla esc` | Pressionar Escape |
+| `/tecla tab` | Pressionar Tab |
+| `/tecla ctrl+c` | Combo de teclas |
+| `/atalho copiar` | Atalho pré-definido |
+| `/atalhos` | Listar todos atalhos |
 
-### 💻 Terminal
-| Comando | Descrição |
-|---------|-----------|
-| `/exec <cmd>` | Executar comando shell |
-| `/ping <host>` | Testar conectividade |
+### Teclas Rápidas
+| Comando | Tecla |
+|---------|-------|
+| `/enter` | Enter |
+| `/esc` | Escape |
+| `/tab` | Tab |
+| `/space` | Espaço |
+| `/backspace` | Backspace |
 
-### 📁 Arquivos
-| Comando | Descrição |
-|---------|-----------|
-| `/ls <pasta>` | Listar diretório |
-| `/cat <arquivo>` | Ver conteúdo |
-| `/tail <arquivo>` | Últimas linhas |
-| `/find <padrão>` | Buscar arquivos |
-| `/pwd` | Diretório atual |
-
-### 📍 GPIO
-| Comando | Descrição |
-|---------|-----------|
-| `/gpio` | Status dos pinos exportados |
-| `/gpio <pin> out <0\|1>` | Definir saída |
-| `/gpio <pin> in` | Ler entrada |
-
-### 🌐 Rede
-| Comando | Descrição |
-|---------|-----------|
-| `/rede` | Informações completas |
-| `/wifi` | Redes WiFi disponíveis |
-| `/wificonnect <ssid> <senha>` | Conectar ao WiFi |
-| `/ip` | IP público |
-
-### ⚙️ Serviços
-| Comando | Descrição |
-|---------|-----------|
-| `/servicos` | Listar serviços ativos |
-| `/servico <nome> status` | Ver status |
-| `/servico <nome> start` | Iniciar |
-| `/servico <nome> stop` | Parar |
-| `/servico <nome> restart` | Reiniciar |
-
-### 🐳 Docker
-| Comando | Descrição |
-|---------|-----------|
-| `/docker` | Listar containers |
-| `/dockerimg` | Listar imagens |
-| `/dockerctl <nome> start` | Iniciar container |
-| `/dockerctl <nome> stop` | Parar container |
-| `/dockerctl <nome> logs` | Ver logs |
-| `/dockerrun <imagem>` | Criar container |
-
-### ⏰ Automação
-| Comando | Descrição |
-|---------|-----------|
-| `/cron` | Listar cron jobs |
-| `/addcron "<schedule>" "<cmd>"` | Adicionar job |
-
-### 📦 Backup
-| Comando | Descrição |
-|---------|-----------|
-| `/backups` | Listar backups |
-| `/backup <pasta>` | Criar backup |
-
-### 🔌 Energia
-| Comando | Descrição |
-|---------|-----------|
-| `/shutdown` | Desligar (com confirmação) |
-| `/reboot` | Reiniciar (com confirmação) |
-| `/confirmar` | Confirmar ação |
-| `/cancelar` | Cancelar ação |
-
-### 🌐 Navegador
-| Comando | Descrição |
-|---------|-----------|
-| `/abrir <url>` | Abrir página |
-| `/screenshot` | Capturar tela |
-| `/fechar` | Fechar navegador |
-
-### 💬 IA
-| Comando | Descrição |
-|---------|-----------|
-| `/modelo` | Ver modelo atual |
-| `/limpar` | Limpar histórico |
-| *qualquer texto* | Conversar com a IA |
+### Atalhos Pré-definidos
+| Nome | Combo |
+|------|-------|
+| `copiar` | Ctrl+C |
+| `colar` | Ctrl+V |
+| `cortar` | Ctrl+X |
+| `desfazer` | Ctrl+Z |
+| `salvar` | Ctrl+S |
+| `selecionartudo` | Ctrl+A |
+| `fechar` | Alt+F4 |
+| `alternar` | Alt+Tab |
+| `desktop` | Super+D |
+| `terminal` | Ctrl+Alt+T |
+| `buscar` | Ctrl+F |
+| `novaguia` | Ctrl+T |
+| `atualizar` | F5 |
+| `telaCheia` | F11 |
 
 ---
 
-## ⚠️ Sistema de Alertas
+## 📸 Comandos de Tela
 
-O bot monitora automaticamente a cada 5 minutos:
-
-- 🌡️ **Temperatura** > 70°C
-- 🖥️ **CPU** > 90%
-- 💾 **RAM** > 90%
-- 💿 **Disco** > 90%
-
-Alertas são enviados automaticamente para os usuários permitidos.
-
----
-
-## 🔒 Segurança
-
-### Comandos Bloqueados
-- `rm -rf /`
-- `mkfs`
-- `dd if=/dev/zero of=/dev`
-- Fork bombs
-
-### Comandos com Confirmação
-- `shutdown`, `reboot`
-- `rm -rf`
-
-### Controle de Acesso
-Apenas IDs listados em `ALLOWED_USERS` podem usar o bot.
+| Comando | Descrição |
+|---------|-----------|
+| `/tela` | Screenshot da tela |
+| `/janelas` | Listar janelas abertas |
+| `/focar nome` | Focar em janela |
+| `/ativa` | Ver janela ativa |
+| `/resolucao` | Ver resolução |
 
 ---
 
-## 🔧 Configuração
+## 💻 Comandos de Sistema
 
-### Variáveis de Ambiente
+| Comando | Descrição |
+|---------|-----------|
+| `/status` | Status do sistema |
+| `/exec comando` | Executar comando |
+| `/gpio N out 0/1` | Controlar GPIO |
+| `/gpio N in` | Ler GPIO |
 
-| Variável | Descrição | Padrão |
-|----------|-----------|--------|
-| `TELEGRAM_TOKEN` | Token do bot | - |
-| `ALLOWED_USERS` | IDs permitidos (vírgula) | - |
-| `OLLAMA_MODEL` | Modelo de IA | llama3.1:8b |
-| `OLLAMA_URL` | URL do Ollama | http://localhost:11434 |
+---
 
-### Editar configuração:
+## 💬 IA Local
 
-```bash
-sudo systemctl edit orangepi-bot
-```
+Envie qualquer mensagem para conversar com a IA!
 
-Adicione:
-```ini
-[Service]
-Environment="TELEGRAM_TOKEN=novo_token"
-Environment="ALLOWED_USERS=123,456"
-Environment="OLLAMA_MODEL=llama3.2:8b"
-```
+A IA conhece todos os comandos e pode sugerir ações.
 
-Depois:
-```bash
-sudo systemctl restart orangepi-bot
-```
+---
+
+## 🔧 Requisitos
+
+- **Hardware**: Orange Pi 6 Plus 32GB
+- **OS**: Armbian / Ubuntu com desktop (X11)
+- **Display**: Necessário para controle de mouse/teclado
 
 ---
 
@@ -215,38 +136,15 @@ sudo systemctl restart orangepi-bot
 # Ver status
 sudo systemctl status orangepi-bot
 
-# Ver logs em tempo real
+# Ver logs
 sudo journalctl -u orangepi-bot -f
 
 # Reiniciar
 sudo systemctl restart orangepi-bot
-
-# Parar
-sudo systemctl stop orangepi-bot
-
-# Iniciar
-sudo systemctl start orangepi-bot
 ```
-
----
-
-## 📋 Requisitos
-
-- **Hardware**: Orange Pi 6 Plus 32GB (ou similar ARM64 com RK3588)
-- **RAM**: 8GB+ (32GB recomendado para modelos maiores)
-- **OS**: Armbian / Ubuntu 22.04+
-- **Rede**: Conexão com internet para Telegram
 
 ---
 
 ## 📄 Licença
 
-MIT License - Use como quiser!
-
----
-
-## 🙏 Créditos
-
-- [Ollama](https://ollama.com/) - LLM local
-- [node-telegram-bot-api](https://github.com/yagop/node-telegram-bot-api) - Telegram API
-- [Puppeteer](https://pptr.dev/) - Automação de navegador
+MIT License
