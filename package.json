@@ -1,46 +1,36 @@
 {
-  "name": "agente-ia-clawdbot-local",
-  "version": "1.0.0",
-  "description": "Agente de IA autônomo local para Orange Pi 5 Plus usando ClawdBot",
+  "name": "clawdbot-orangepi-agent",
+  "version": "2.0.0",
+  "description": "Agente de IA completo para Orange Pi 6 Plus - Mouse, Teclado, Apps, Web, IA Local",
   "main": "index.js",
   "scripts": {
-    "install:all": "bash scripts/install.sh",
-    "setup:ollama": "bash scripts/setup-ollama.sh",
-    "setup:service": "bash scripts/setup-service.sh",
-    "start": "clawdbot dashboard",
-    "start:gateway": "NODE_OPTIONS='--max-old-space-size=4096' clawdbot gateway --port 18789",
-    "health": "bash scripts/health-check.sh",
-    "logs": "journalctl -u clawdbot -f",
-    "test:skills": "node skills/test-all.js"
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "install-agent": "bash scripts/install.sh"
   },
   "keywords": [
+    "orangepi",
+    "telegram",
+    "bot",
     "ai",
-    "agent",
-    "clawdbot",
-    "moltbot",
-    "orange-pi",
-    "local-llm",
     "ollama",
     "automation",
-    "home-automation",
-    "raspberry-pi",
-    "arm64"
+    "mouse",
+    "keyboard",
+    "clawdbot"
   ],
   "author": "empadacss",
   "license": "MIT",
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "dependencies": {
-    "clawdbot": "latest"
-  },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/empadacss/agente-ia-clawdbot12.git"
   },
-  "bugs": {
-    "url": "https://github.com/empadacss/agente-ia-clawdbot12/issues"
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-telegram-bot-api": "^0.66.0",
+    "puppeteer": "^22.0.0"
   },
-  "homepage": "https://github.com/empadacss/agente-ia-clawdbot12#readme"
+  "engines": {
+    "node": ">=20.0.0"
+  }
 }

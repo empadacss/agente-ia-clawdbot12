@@ -1,77 +1,105 @@
-# 🤖 OrangePi 6 Plus - CONTROLE TOTAL
+# 🤖 CLAWDBOT AGENT - Orange Pi 6 Plus
 
 [![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
 [![Telegram](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://core.telegram.org/bots)
 [![Ollama](https://img.shields.io/badge/Ollama-Local_LLM-orange.svg)](https://ollama.com/)
+[![Clawdbot](https://img.shields.io/badge/Clawdbot-Agent-purple.svg)](https://clawd.bot/)
 
-**Controle completo** da Orange Pi 6 Plus via Telegram com **foco em Mouse e Teclado**.
+**Agente de IA completo e 100% funcional** para controle total da Orange Pi 6 Plus via Telegram.
 
 ---
 
-## ✨ Funcionalidades Principais
+## ✨ Funcionalidades
 
-| Categoria | Funcionalidades |
-|-----------|-----------------|
+| Categoria | O que faz |
+|-----------|-----------|
 | 🖱️ **Mouse** | Mover, clicar, duplo clique, scroll, arrastar |
-| ⌨️ **Teclado** | Digitar, teclas especiais, atalhos, combos |
-| 📸 **Tela** | Screenshots em tempo real, listar janelas, focar |
-| 🧠 **IA Local** | Chat com LLM via Ollama |
+| ⌨️ **Teclado** | Digitar, teclas especiais, combos (Ctrl+C), atalhos |
+| 🚀 **Aplicativos** | Abrir apps, gerenciar janelas, minimizar, maximizar |
+| 🌐 **Web/Pesquisa** | Google, YouTube, Wikipedia, Maps, Imagens |
+| 📸 **Tela** | Screenshots, resolução, controle de janelas |
+| 🧠 **IA Local** | Chat inteligente via Ollama |
+| 📊 **Sistema** | CPU, RAM, temperatura, disco, processos |
 | 📍 **GPIO** | Controle de pinos físicos |
-| 💻 **Sistema** | Monitoramento, comandos shell |
 
 ---
 
-## 🚀 Instalação
+## 🚀 Instalação Rápida
 
 ```bash
 TELEGRAM_TOKEN="seu_token" \
 ALLOWED_USERS="seu_chat_id" \
 OLLAMA_MODEL="llama3.1:8b" \
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/bot/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/scripts/install.sh)"
 ```
 
 ---
 
-## 🖱️ Comandos de Mouse
+## 📱 Comandos
 
+### 🖱️ Mouse
 | Comando | Descrição |
 |---------|-----------|
 | `/mouse X Y` | Mover para posição |
-| `/mouse` | Ver posição atual |
 | `/mrel X Y` | Movimento relativo |
 | `/click` | Clique esquerdo |
 | `/click r` | Clique direito |
-| `/click X Y` | Clicar em posição |
 | `/dclick` | Duplo clique |
-| `/rclick` | Clique direito |
-| `/scroll up` | Rolar para cima |
-| `/scroll down` | Rolar para baixo |
+| `/scroll up/down` | Rolar |
 | `/arrastar X1 Y1 X2 Y2` | Arrastar |
 
----
-
-## ⌨️ Comandos de Teclado
-
+### ⌨️ Teclado
 | Comando | Descrição |
 |---------|-----------|
 | `/digitar texto` | Digitar texto |
-| `/tecla enter` | Pressionar Enter |
-| `/tecla esc` | Pressionar Escape |
-| `/tecla tab` | Pressionar Tab |
+| `/tecla enter` | Pressionar tecla |
 | `/tecla ctrl+c` | Combo de teclas |
 | `/atalho copiar` | Atalho pré-definido |
-| `/atalhos` | Listar todos atalhos |
+| `/atalhos` | Listar atalhos |
+| `/enter` `/esc` `/tab` | Teclas rápidas |
 
-### Teclas Rápidas
-| Comando | Tecla |
-|---------|-------|
-| `/enter` | Enter |
-| `/esc` | Escape |
-| `/tab` | Tab |
-| `/space` | Espaço |
-| `/backspace` | Backspace |
+### 🚀 Aplicativos
+| Comando | Descrição |
+|---------|-----------|
+| `/abrir navegador` | Abrir aplicativo |
+| `/apps` | Listar apps disponíveis |
+| `/janelas` | Listar janelas abertas |
+| `/focar Chrome` | Focar em janela |
+| `/minimizar` | Minimizar janela |
+| `/maximizar` | Maximizar janela |
+| `/fecharjanela` | Fechar janela ativa |
 
-### Atalhos Pré-definidos
+### 🌐 Pesquisa
+| Comando | Descrição |
+|---------|-----------|
+| `/pesquisar termo` | Pesquisar no Google |
+| `/youtube termo` | Pesquisar no YouTube |
+| `/wikipedia termo` | Pesquisar na Wikipedia |
+| `/maps local` | Pesquisar no Google Maps |
+| `/imagens termo` | Pesquisar imagens |
+
+### 📸 Tela
+| Comando | Descrição |
+|---------|-----------|
+| `/tela` | Screenshot |
+| `/resolucao` | Ver resolução |
+| `/desktop` | Mostrar desktop |
+
+### 📊 Sistema
+| Comando | Descrição |
+|---------|-----------|
+| `/status` | Status completo |
+| `/cpu` `/ram` `/temp` `/disco` | Métricas |
+| `/processos` | Top processos |
+| `/exec comando` | Executar comando |
+
+### 💬 IA
+Envie qualquer mensagem para conversar com a IA!
+
+---
+
+## ⌨️ Atalhos Disponíveis
+
 | Nome | Combo |
 |------|-------|
 | `copiar` | Ctrl+C |
@@ -87,46 +115,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-claw
 | `buscar` | Ctrl+F |
 | `novaguia` | Ctrl+T |
 | `atualizar` | F5 |
-| `telaCheia` | F11 |
-
----
-
-## 📸 Comandos de Tela
-
-| Comando | Descrição |
-|---------|-----------|
-| `/tela` | Screenshot da tela |
-| `/janelas` | Listar janelas abertas |
-| `/focar nome` | Focar em janela |
-| `/ativa` | Ver janela ativa |
-| `/resolucao` | Ver resolução |
-
----
-
-## 💻 Comandos de Sistema
-
-| Comando | Descrição |
-|---------|-----------|
-| `/status` | Status do sistema |
-| `/exec comando` | Executar comando |
-| `/gpio N out 0/1` | Controlar GPIO |
-| `/gpio N in` | Ler GPIO |
-
----
-
-## 💬 IA Local
-
-Envie qualquer mensagem para conversar com a IA!
-
-A IA conhece todos os comandos e pode sugerir ações.
-
----
-
-## 🔧 Requisitos
-
-- **Hardware**: Orange Pi 6 Plus 32GB
-- **OS**: Armbian / Ubuntu com desktop (X11)
-- **Display**: Necessário para controle de mouse/teclado
+| `telacheia` | F11 |
 
 ---
 
@@ -134,14 +123,25 @@ A IA conhece todos os comandos e pode sugerir ações.
 
 ```bash
 # Ver status
-sudo systemctl status orangepi-bot
+sudo systemctl status clawdbot-agent
 
 # Ver logs
-sudo journalctl -u orangepi-bot -f
+sudo journalctl -u clawdbot-agent -f
 
 # Reiniciar
-sudo systemctl restart orangepi-bot
+sudo systemctl restart clawdbot-agent
+
+# Parar
+sudo systemctl stop clawdbot-agent
 ```
+
+---
+
+## 📋 Requisitos
+
+- **Hardware**: Orange Pi 6 Plus 32GB
+- **OS**: Armbian / Ubuntu com desktop (X11)
+- **Display**: Necessário para controle de mouse/teclado
 
 ---
 
