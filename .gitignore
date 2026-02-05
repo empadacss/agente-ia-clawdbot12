@@ -1,0 +1,74 @@
+# ============================================
+# Arquivos e pastas ignorados pelo Git
+# ============================================
+
+# Dependências
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Variáveis de ambiente (contém senhas!)
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+
+# Build
+dist/
+build/
+out/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ClawdBot específico
+.clawdbot/
+clawdbot-data/
+sessions/
+*.session
+*.session.json
+
+# Ollama
+ollama-models/
+
+# Backups
+*.backup
+*.bak
+backups/
+
+# Temporários
+tmp/
+temp/
+*.tmp
+
+# Chaves e certificados
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+
+# Dados sensíveis
+credentials/
+tokens/

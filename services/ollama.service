@@ -1,0 +1,70 @@
+# ============================================
+# Serviço Systemd para Ollama
+# Nota: O instalador do Ollama geralmente cria este arquivo automaticamente
+# Use este apenas se precisar personalizar
+# ============================================
+
+[Unit]
+Description=Ollama - Local LLM Server
+Documentation=https://ollama.com
+
+# Dependências
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+# Tipo de serviço
+Type=simple
+
+# Usuário (pode ser root ou usuário específico)
+User=root
+Group=root
+
+# Variáveis de ambiente
+# Para aceitar conexões externas, use OLLAMA_HOST=0.0.0.0
+Environment="OLLAMA_HOST=127.0.0.1"
+Environment="OLLAMA_ORIGINS=*"
+Environment="OLLAMA_KEEP_ALIVE=5m"
+Environment="OLLAMA_NUM_PARALLEL=2"
+Environment="OLLAMA_MAX_LOADED_MODELS=1"
+
+# Comando de execução
+ExecStart=/usr/local/bin/ollama serve
+
+# Reiniciar automaticamente
+Restart=always
+RestartSec=5
+
+# Timeout
+TimeoutStartSec=120
+
+# Logs
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ollama
+
+# Limites de recursos (otimizado para Orange Pi 32GB)
+LimitNOFILE=65535
+MemoryMax=24G
+MemoryHigh=20G
+
+# Prioridade (IA é pesado, dar prioridade)
+Nice=-5
+IOSchedulingClass=best-effort
+IOSchedulingPriority=2
+
+[Install]
+WantedBy=multi-user.target
+
+# ============================================
+# Configurações Alternativas:
+#
+# Para permitir acesso de outros dispositivos na rede:
+# Environment="OLLAMA_HOST=0.0.0.0"
+#
+# Para limitar modelos em memória:
+# Environment="OLLAMA_MAX_LOADED_MODELS=1"
+#
+# Para usar GPU/NPU específica:
+# Environment="OLLAMA_DEVICE=cuda"  (ou "rocm", "metal")
+# ============================================
