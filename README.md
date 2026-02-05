@@ -4,7 +4,7 @@
 [![Telegram](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://core.telegram.org/bots)
 [![Ollama](https://img.shields.io/badge/Ollama-Local_LLM-orange.svg)](https://ollama.com/)
 
-Um bot de Telegram que roda **100% localmente** na Orange Pi 5 Plus, usando Ollama para IA e permitindo controle total do sistema.
+Um bot de Telegram que roda **100% localmente** na Orange Pi 6 Plus 32GB, usando Ollama para IA e permitindo controle total do sistema.
 
 ---
 
@@ -134,7 +134,7 @@ sudo systemctl start orangepi-bot
 
 ## 📋 Requisitos
 
-- Orange Pi 5 Plus (ou similar ARM64)
+- Orange Pi 6 Plus 32GB (ou similar ARM64 com RK3588)
 - 8GB+ RAM (32GB recomendado)
 - Armbian/Ubuntu 22.04+
 - Conexão com internet

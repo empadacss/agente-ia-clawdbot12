@@ -378,7 +378,7 @@ async function closeBrowser() {
 // PROMPT DO SISTEMA
 // ============================================
 
-const SYSTEM_PROMPT = `Você é um assistente de IA chamado OrangePi IA, rodando localmente em uma Orange Pi 5 Plus com 32GB de RAM.
+const SYSTEM_PROMPT = `Você é um assistente de IA chamado OrangePi IA, rodando localmente em uma Orange Pi 6 Plus com 32GB de RAM.
 
 Você pode ajudar com:
 - Responder perguntas e explicar conceitos
