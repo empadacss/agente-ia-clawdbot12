@@ -1,7 +1,7 @@
 {
-  "name": "clawdbot-orangepi-agent",
-  "version": "2.0.0",
-  "description": "Agente de IA completo para Orange Pi 6 Plus - Mouse, Teclado, Apps, Web, IA Local",
+  "name": "claude-agent-orangepi",
+  "version": "3.0.0",
+  "description": "Agente de IA de próximo nível para Orange Pi 6 Plus usando Claude API com Tool Use",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -10,14 +10,15 @@
   },
   "keywords": [
     "orangepi",
-    "telegram",
-    "bot",
-    "ai",
-    "ollama",
+    "claude",
+    "anthropic",
+    "ai-agent",
     "automation",
-    "mouse",
-    "keyboard",
-    "clawdbot"
+    "telegram",
+    "mouse-control",
+    "keyboard-control",
+    "tool-use",
+    "function-calling"
   ],
   "author": "empadacss",
   "license": "MIT",
@@ -26,6 +27,7 @@
     "url": "https://github.com/empadacss/agente-ia-clawdbot12.git"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
     "dotenv": "^16.4.5",
     "node-telegram-bot-api": "^0.66.0",
     "puppeteer": "^22.0.0"

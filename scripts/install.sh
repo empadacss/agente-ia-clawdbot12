@@ -1,78 +1,102 @@
 #!/bin/bash
 
 # ============================================
-# 🤖 CLAWDBOT - OrangePi 6 Plus AGENT
-# Instalador Completo
+# 🧠 CLAUDE AGENT - Script de Instalação
+# ============================================
+# Agente de IA de Próximo Nível
+# Orange Pi 6 Plus 32GB
 # ============================================
 
 set -e
 
-# Cores
+# ============================================
+# CORES
+# ============================================
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-clear
-echo -e "${CYAN}"
-cat << 'BANNER'
-╔════════════════════════════════════════════════════════════╗
-║                                                            ║
-║   🤖 CLAWDBOT - Orange Pi 6 Plus AGENT                     ║
-║                                                            ║
-║   🖱️  Mouse + ⌨️  Teclado + 🌐 Web + 🧠 IA Local            ║
-║                                                            ║
-║   Agente de IA completo e 100% funcional                   ║
-║                                                            ║
-╚════════════════════════════════════════════════════════════╝
-BANNER
-echo -e "${NC}"
-
-# ============================================
-# CONFIGURAÇÕES - EDITE AQUI
-# ============================================
-
-TELEGRAM_TOKEN="${TELEGRAM_TOKEN:-SEU_TOKEN_AQUI}"
-ALLOWED_USERS="${ALLOWED_USERS:-SEU_CHAT_ID_AQUI}"
-OLLAMA_MODEL="${OLLAMA_MODEL:-llama3.1:8b}"
-INSTALL_DIR="$HOME/clawdbot-agent"
-GITHUB_REPO="https://github.com/empadacss/agente-ia-clawdbot12.git"
-
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}Configurações:${NC}"
-echo -e "  📱 Token: ${TELEGRAM_TOKEN:0:25}..."
-echo -e "  👤 Chat ID: $ALLOWED_USERS"
-echo -e "  🧠 Modelo: $OLLAMA_MODEL"
-echo -e "  📁 Diretório: $INSTALL_DIR"
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-
-if [[ "$TELEGRAM_TOKEN" == "SEU_TOKEN_AQUI" ]]; then
-    echo -e "${RED}❌ Configure o TELEGRAM_TOKEN!${NC}"
+print_banner() {
     echo ""
-    echo "Execute assim:"
-    echo -e "${GREEN}TELEGRAM_TOKEN=\"seu_token\" ALLOWED_USERS=\"seu_id\" bash install.sh${NC}"
+    echo -e "${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║                                                                ║${NC}"
+    echo -e "${CYAN}║   ${PURPLE}🧠 CLAUDE AGENT${CYAN} - Orange Pi 6 Plus                           ║${NC}"
+    echo -e "${CYAN}║                                                                ║${NC}"
+    echo -e "${CYAN}║   Agente de IA de Próximo Nível                                ║${NC}"
+    echo -e "${CYAN}║   Usando Claude API com Tool Use (Function Calling)            ║${NC}"
+    echo -e "${CYAN}║                                                                ║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+}
+
+print_step() {
+    echo ""
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}▶ $1${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+}
+
+print_banner
+
+# ============================================
+# VERIFICAR VARIÁVEIS
+# ============================================
+
+if [ -z "$ANTHROPIC_API_KEY" ]; then
+    echo -e "${RED}❌ ERRO: ANTHROPIC_API_KEY não configurada!${NC}"
+    echo ""
+    echo "Configure sua API key do Claude Anthropic:"
+    echo ""
+    echo "  export ANTHROPIC_API_KEY=\"sk-ant-api03-...\""
+    echo ""
+    echo "Obtenha sua API key em: https://console.anthropic.com/"
     echo ""
     exit 1
 fi
+
+if [ -z "$TELEGRAM_TOKEN" ]; then
+    echo -e "${RED}❌ ERRO: TELEGRAM_TOKEN não configurado!${NC}"
+    echo ""
+    echo "Configure seu token do Telegram:"
+    echo ""
+    echo "  export TELEGRAM_TOKEN=\"123456789:ABC...\""
+    echo ""
+    echo "Obtenha seu token falando com @BotFather no Telegram"
+    echo ""
+    exit 1
+fi
+
+# Valores padrão
+ALLOWED_USERS="${ALLOWED_USERS:-}"
+CLAUDE_MODEL="${CLAUDE_MODEL:-claude-sonnet-4-20250514}"
+INSTALL_DIR="${INSTALL_DIR:-$HOME/claude-agent}"
+
+echo -e "${GREEN}📋 Configuração:${NC}"
+echo -e "   API Key: ${CYAN}${ANTHROPIC_API_KEY:0:15}...${NC}"
+echo -e "   Telegram: ${CYAN}${TELEGRAM_TOKEN:0:12}...${NC}"
+echo -e "   Modelo: ${CYAN}$CLAUDE_MODEL${NC}"
+echo -e "   Usuários: ${CYAN}${ALLOWED_USERS:-TODOS}${NC}"
+echo -e "   Diretório: ${CYAN}$INSTALL_DIR${NC}"
+echo ""
 
 # ============================================
 # 1. ATUALIZAR SISTEMA
 # ============================================
 
-echo -e "${BLUE}[1/9]${NC} Atualizando sistema..."
+print_step "1/8 Atualizando sistema..."
+
 sudo apt update
 sudo apt upgrade -y
 
-echo -e "${GREEN}✅ Sistema atualizado${NC}"
-
 # ============================================
-# 2. DEPENDÊNCIAS DO SISTEMA
+# 2. INSTALAR DEPENDÊNCIAS
 # ============================================
 
-echo -e "${BLUE}[2/9]${NC} Instalando dependências do sistema..."
+print_step "2/8 Instalando dependências..."
 
 sudo apt install -y \
     curl \
@@ -80,264 +104,149 @@ sudo apt install -y \
     git \
     build-essential \
     ca-certificates \
-    gnupg \
-    lsb-release
-
-echo -e "${GREEN}✅ Dependências base instaladas${NC}"
-
-# ============================================
-# 3. FERRAMENTAS DE CONTROLE (MOUSE/TECLADO/TELA)
-# ============================================
-
-echo -e "${BLUE}[3/9]${NC} Instalando ferramentas de controle..."
-
-# Mouse e Teclado
-sudo apt install -y \
     xdotool \
+    scrot \
     wmctrl \
     xclip \
-    xsel
-
-# Screenshot
-sudo apt install -y \
-    scrot \
-    imagemagick
-
-# X11 utils
-sudo apt install -y \
+    xsel \
+    imagemagick \
     x11-utils \
-    x11-xserver-utils
+    x11-xserver-utils \
+    network-manager \
+    gpiod \
+    chromium-browser || sudo apt install -y chromium
 
-# Navegador
-sudo apt install -y chromium-browser || sudo apt install -y chromium || true
-
-# Rede
-sudo apt install -y \
-    net-tools \
-    wireless-tools \
-    network-manager || true
-
-# GPIO
-sudo apt install -y python3-gpiod gpiod || true
-
-echo -e "${GREEN}✅ Ferramentas de controle instaladas${NC}"
+echo -e "${GREEN}✅ Dependências instaladas${NC}"
 
 # ============================================
-# 4. NODE.JS 22 VIA NVM
+# 3. INSTALAR NODE.JS 22
 # ============================================
 
-echo -e "${BLUE}[4/9]${NC} Instalando Node.js 22..."
+print_step "3/8 Instalando Node.js 22..."
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
 export NVM_DIR="$HOME/.nvm"
-
-if [ ! -d "$NVM_DIR" ]; then
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-fi
-
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-if ! command -v node &> /dev/null || [ "$(node -v | cut -d. -f1 | tr -d 'v')" -lt 20 ]; then
-    nvm install 22
-    nvm use 22
-    nvm alias default 22
+nvm install 22
+nvm use 22
+nvm alias default 22
+
+NODE_VERSION=$(node --version)
+NODE_BIN=$(dirname "$(which node)")
+
+echo -e "${GREEN}✅ Node.js instalado: $NODE_VERSION${NC}"
+echo -e "${GREEN}   Path: $NODE_BIN${NC}"
+
+# ============================================
+# 4. CONFIGURAR SWAP (8GB)
+# ============================================
+
+print_step "4/8 Configurando swap..."
+
+if [ "$(free -m | awk '/^Swap:/{print $2}')" -lt 4000 ]; then
+    sudo fallocate -l 8G /swapfile 2>/dev/null || sudo dd if=/dev/zero of=/swapfile bs=1M count=8192
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    grep -q "/swapfile" /etc/fstab || echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
+    echo -e "${GREEN}✅ Swap de 8GB configurado${NC}"
+else
+    echo -e "${GREEN}✅ Swap já existe${NC}"
 fi
 
-# Garantir NVM no bashrc
-if ! grep -q "NVM_DIR" ~/.bashrc; then
-    cat >> ~/.bashrc << 'BASHEOF'
-
-# NVM
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-BASHEOF
-fi
-
-echo -e "${GREEN}✅ Node.js $(node -v) instalado${NC}"
-
 # ============================================
-# 5. OLLAMA
+# 5. CLONAR REPOSITÓRIO
 # ============================================
 
-echo -e "${BLUE}[5/9]${NC} Instalando Ollama..."
+print_step "5/8 Clonando repositório..."
 
-if ! command -v ollama &> /dev/null; then
-    curl -fsSL https://ollama.com/install.sh | sh
-fi
-
-sudo systemctl enable ollama 2>/dev/null || true
-sudo systemctl start ollama 2>/dev/null || (ollama serve &)
-sleep 5
-
-echo -e "${GREEN}✅ Ollama instalado${NC}"
-
-# ============================================
-# 6. MODELO DE IA
-# ============================================
-
-echo -e "${BLUE}[6/9]${NC} Baixando modelo $OLLAMA_MODEL..."
-echo -e "${YELLOW}⏳ Isso pode demorar vários minutos...${NC}"
-
-ollama pull "$OLLAMA_MODEL"
-
-echo -e "${GREEN}✅ Modelo $OLLAMA_MODEL pronto${NC}"
-
-# ============================================
-# 7. CLAWDBOT E AGENTE
-# ============================================
-
-echo -e "${BLUE}[7/9]${NC} Instalando Clawdbot e Agente..."
-
-# Instalar Clawdbot globalmente
-npm install -g clawdbot@latest
-
-# Clonar repositório
 if [ -d "$INSTALL_DIR" ]; then
     cd "$INSTALL_DIR"
-    git pull || true
+    git pull origin main || true
 else
-    git clone "$GITHUB_REPO" "$INSTALL_DIR"
+    git clone https://github.com/empadacss/agente-ia-clawdbot12.git "$INSTALL_DIR"
 fi
 
 cd "$INSTALL_DIR"
 
-# Instalar dependências do projeto
+echo -e "${GREEN}✅ Repositório clonado em $INSTALL_DIR${NC}"
+
+# ============================================
+# 6. INSTALAR DEPENDÊNCIAS NPM
+# ============================================
+
+print_step "6/8 Instalando dependências NPM..."
+
 npm install
 
-# Criar arquivo .env
-cat > .env << EOF
+echo -e "${GREEN}✅ Dependências NPM instaladas${NC}"
+
+# ============================================
+# 7. CRIAR ARQUIVO .ENV
+# ============================================
+
+print_step "7/8 Configurando ambiente..."
+
+cat > "$INSTALL_DIR/.env" << EOF
+# ============================================
+# CLAUDE AGENT - Configuração
+# ============================================
+
+# Claude API (Anthropic)
+ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
+CLAUDE_MODEL=$CLAUDE_MODEL
+
 # Telegram
 TELEGRAM_BOT_TOKEN=$TELEGRAM_TOKEN
 TELEGRAM_ALLOWED_CHAT_ID=$ALLOWED_USERS
 
-# Ollama
-LLM_PROVIDER=ollama
-LLM_MODEL=$OLLAMA_MODEL
-OLLAMA_BASE_URL=http://localhost:11434
-
-# Display
-DISPLAY=:0
-
-# Configurações
-NODE_ENV=production
+# Sistema
 NODE_OPTIONS=--max-old-space-size=4096
 EOF
 
-echo -e "${GREEN}✅ Agente instalado${NC}"
-
-# ============================================
-# 8. CONFIGURAR CLAWDBOT
-# ============================================
-
-echo -e "${BLUE}[8/9]${NC} Configurando Clawdbot..."
-
-# Criar diretório de configuração
-mkdir -p ~/.clawdbot
-
-# Criar configuração do Clawdbot
-cat > ~/.clawdbot/clawdbot.json << EOF
-{
-  "llm": {
-    "provider": "ollama",
-    "model": "$OLLAMA_MODEL",
-    "baseUrl": "http://localhost:11434"
-  },
-  "channels": {
-    "telegram-main": {
-      "type": "telegram",
-      "enabled": true,
-      "token": "$TELEGRAM_TOKEN",
-      "allowedChatIds": ["$ALLOWED_USERS"]
-    }
-  },
-  "gateway": {
-    "mode": "local",
-    "bind": "lan",
-    "port": 18789
-  },
-  "skills": {
-    "enabled": true,
-    "path": "$INSTALL_DIR/skills"
-  }
-}
-EOF
-
-# Configurar permissões de X11
+# Configurar xhost para GUI
+echo "xhost +local: 2>/dev/null || true" >> ~/.bashrc
 xhost +local: 2>/dev/null || true
 
-echo -e "${GREEN}✅ Clawdbot configurado${NC}"
+echo -e "${GREEN}✅ Arquivo .env criado${NC}"
 
 # ============================================
-# 9. SERVIÇO SYSTEMD
+# 8. CRIAR SERVIÇO SYSTEMD
 # ============================================
 
-echo -e "${BLUE}[9/9]${NC} Criando serviço systemd..."
+print_step "8/8 Criando serviço systemd..."
 
-NODE_PATH="$(dirname "$(which node)")"
-CHROMIUM_PATH="/usr/bin/chromium-browser"
-[ -f "/usr/bin/chromium" ] && CHROMIUM_PATH="/usr/bin/chromium"
-
-# Serviço principal do agente
-sudo tee /etc/systemd/system/clawdbot-agent.service > /dev/null << EOF
+sudo tee /etc/systemd/system/claude-agent.service > /dev/null << EOF
 [Unit]
-Description=Clawdbot AI Agent - Orange Pi 6 Plus
-After=network.target ollama.service graphical.target
-Wants=ollama.service
+Description=Claude Agent - Orange Pi 6 Plus
+After=network.target
 
 [Service]
 Type=simple
 User=$USER
 WorkingDirectory=$INSTALL_DIR
-Environment="HOME=$HOME"
-Environment="PATH=$NODE_PATH:/usr/local/bin:/usr/bin:/bin"
-Environment="NODE_ENV=production"
-Environment="DISPLAY=:0"
-Environment="XAUTHORITY=$HOME/.Xauthority"
-Environment="TELEGRAM_BOT_TOKEN=$TELEGRAM_TOKEN"
-Environment="TELEGRAM_ALLOWED_CHAT_ID=$ALLOWED_USERS"
-Environment="LLM_PROVIDER=ollama"
-Environment="LLM_MODEL=$OLLAMA_MODEL"
-Environment="OLLAMA_BASE_URL=http://localhost:11434"
-Environment="PUPPETEER_EXECUTABLE_PATH=$CHROMIUM_PATH"
-Environment="PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true"
-ExecStart=$NODE_PATH/node index.js
+Environment=HOME=$HOME
+Environment=PATH=$NODE_BIN:/usr/local/bin:/usr/bin:/bin
+Environment=DISPLAY=:0
+Environment=NODE_OPTIONS=--max-old-space-size=4096
+ExecStart=$NODE_BIN/node index.js
 Restart=always
 RestartSec=10
-StandardOutput=journal
-StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# Configurar sudoers
-sudo tee /etc/sudoers.d/clawdbot > /dev/null << EOF
-$USER ALL=(ALL) NOPASSWD: /sbin/shutdown
-$USER ALL=(ALL) NOPASSWD: /sbin/reboot
-$USER ALL=(ALL) NOPASSWD: /bin/systemctl
-$USER ALL=(ALL) NOPASSWD: /usr/bin/docker
-EOF
-sudo chmod 440 /etc/sudoers.d/clawdbot
+# Configurar sudoers para comandos de sistema
+echo "$USER ALL=(ALL) NOPASSWD: /usr/bin/systemctl, /sbin/reboot, /sbin/poweroff, /sbin/shutdown" | sudo tee /etc/sudoers.d/claude-agent
 
 sudo systemctl daemon-reload
-sudo systemctl enable clawdbot-agent
+sudo systemctl enable claude-agent
+sudo systemctl start claude-agent
 
-echo -e "${GREEN}✅ Serviço criado${NC}"
-
-# ============================================
-# INICIAR AGENTE
-# ============================================
-
-echo -e "${BLUE}[FINAL]${NC} Iniciando agente..."
-
-sudo systemctl restart clawdbot-agent
-sleep 3
-
-if sudo systemctl is-active --quiet clawdbot-agent; then
-    STATUS="${GREEN}✅ RODANDO${NC}"
-else
-    STATUS="${YELLOW}⚠️ VERIFICAR LOGS${NC}"
-    sudo journalctl -u clawdbot-agent -n 20 --no-pager
-fi
+echo -e "${GREEN}✅ Serviço systemd criado e iniciado${NC}"
 
 # ============================================
 # FINALIZAÇÃO
@@ -346,50 +255,30 @@ fi
 IP=$(hostname -I | awk '{print $1}')
 
 echo ""
-echo -e "${CYAN}"
-cat << 'DONE'
-╔════════════════════════════════════════════════════════════╗
-║                                                            ║
-║   🎉 INSTALAÇÃO CONCLUÍDA!                                 ║
-║                                                            ║
-╚════════════════════════════════════════════════════════════╝
-DONE
-echo -e "${NC}"
-
-echo -e "📊 Status: $STATUS"
-echo -e "🌐 IP: $IP"
-echo -e "🧠 Modelo: $OLLAMA_MODEL"
-echo -e "📁 Diretório: $INSTALL_DIR"
+echo -e "${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║                                                                ║${NC}"
+echo -e "${CYAN}║   ${GREEN}✅ INSTALAÇÃO CONCLUÍDA!${CYAN}                                    ║${NC}"
+echo -e "${CYAN}║                                                                ║${NC}"
+echo -e "${CYAN}╚════════════════════════════════════════════════════════════════╝${NC}"
 echo ""
-
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}FUNCIONALIDADES DO AGENTE:${NC}"
+echo -e "${GREEN}📊 Informações:${NC}"
+echo -e "   🧠 Modelo: ${CYAN}$CLAUDE_MODEL${NC}"
+echo -e "   📁 Diretório: ${CYAN}$INSTALL_DIR${NC}"
+echo -e "   🌐 IP: ${CYAN}$IP${NC}"
 echo ""
-echo "  🖱️  MOUSE"
-echo "      Mover, clicar, duplo clique, scroll, arrastar"
+echo -e "${GREEN}📱 Como usar:${NC}"
+echo -e "   1. Abra o Telegram"
+echo -e "   2. Converse com seu bot"
+echo -e "   3. Dê comandos naturais como:"
+echo -e "      ${CYAN}• \"Mova o mouse para 500, 300\"${NC}"
+echo -e "      ${CYAN}• \"Abra o navegador e pesquise o clima\"${NC}"
+echo -e "      ${CYAN}• \"Tire um print da tela\"${NC}"
+echo -e "      ${CYAN}• \"Qual o status do sistema?\"${NC}"
 echo ""
-echo "  ⌨️  TECLADO"
-echo "      Digitar, teclas, combos (ctrl+c), atalhos"
+echo -e "${GREEN}🔧 Comandos úteis:${NC}"
+echo -e "   ${YELLOW}sudo systemctl status claude-agent${NC}  # Ver status"
+echo -e "   ${YELLOW}sudo journalctl -u claude-agent -f${NC}  # Ver logs"
+echo -e "   ${YELLOW}sudo systemctl restart claude-agent${NC} # Reiniciar"
 echo ""
-echo "  🚀 APLICATIVOS"
-echo "      Abrir apps, arquivos, pastas, gerenciar janelas"
-echo ""
-echo "  🌐 WEB"
-echo "      Pesquisar Google/YouTube/Maps, navegar, screenshot"
-echo ""
-echo "  📊 SISTEMA"
-echo "      Status, CPU, RAM, disco, temperatura, serviços"
-echo ""
-echo "  💬 IA"
-echo "      Conversar em linguagem natural!"
-echo ""
-echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo -e "${GREEN}Comandos de gerenciamento:${NC}"
-echo ""
-echo "  sudo systemctl status clawdbot-agent"
-echo "  sudo journalctl -u clawdbot-agent -f"
-echo "  sudo systemctl restart clawdbot-agent"
-echo ""
-echo -e "${CYAN}🤖 Abra o Telegram e converse com seu agente!${NC}"
+echo -e "${PURPLE}🤖 O agente está pronto! Converse no Telegram.${NC}"
 echo ""
