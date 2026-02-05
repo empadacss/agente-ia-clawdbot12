@@ -1,0 +1,17 @@
+{
+  "name": "orangepi-ia-bot",
+  "version": "1.0.0",
+  "description": "Bot Telegram com IA local para Orange Pi",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "puppeteer": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

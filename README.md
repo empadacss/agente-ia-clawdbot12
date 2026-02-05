@@ -1,259 +1,166 @@
-# 🤖 Agente de IA Local - ClawdBot para Orange Pi 5 Plus
+# 🤖 OrangePi IA Bot - Agente de IA Local
 
-[![Node.js](https://img.shields.io/badge/Node.js-22+-green.svg)](https://nodejs.org/)
-[![Orange Pi](https://img.shields.io/badge/Orange%20Pi-5%20Plus-orange.svg)](http://www.orangepi.org/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
+[![Telegram](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://core.telegram.org/bots)
+[![Ollama](https://img.shields.io/badge/Ollama-Local_LLM-orange.svg)](https://ollama.com/)
 
-Um agente de IA autônomo que roda **100% localmente** na sua Orange Pi 5 Plus 32GB, capaz de controlar, monitorar e automatizar praticamente qualquer tarefa no sistema.
-
----
-
-## 🎯 O que este projeto faz?
-
-- ✅ **Controle total do sistema** via comandos naturais em português
-- ✅ **Monitoramento 24/7** de CPU, RAM, temperatura, disco e rede
-- ✅ **Execução de comandos** shell de forma segura
-- ✅ **Integração** com Telegram, WhatsApp, Discord
-- ✅ **IA 100% local** usando Ollama (sem depender de APIs externas)
-- ✅ **Skills customizáveis** para expandir funcionalidades
-- ✅ **Interface web** para monitoramento visual
+Um bot de Telegram que roda **100% localmente** na Orange Pi 5 Plus, usando Ollama para IA e permitindo controle total do sistema.
 
 ---
 
-## 📋 Pré-requisitos
+## ✨ Funcionalidades
 
-### Hardware
-- **Orange Pi 5 Plus** com 32GB de RAM (recomendado)
-- Cartão SD ou eMMC com pelo menos 64GB
-- Fonte de alimentação adequada (5V/4A)
-- Conexão de rede (Ethernet ou Wi-Fi)
-
-### Software
-- Sistema operacional: **Armbian** ou **Ubuntu 22.04+** para ARM64
-- Conexão com internet (apenas para instalação inicial)
+| Categoria | O que faz |
+|-----------|-----------|
+| 🧠 **IA Local** | Responde perguntas usando LLM local (Ollama) |
+| 📊 **Monitoramento** | CPU, RAM, disco, temperatura, processos |
+| 💻 **Terminal** | Executa comandos shell remotamente |
+| 📁 **Arquivos** | Lista, lê, cria e remove arquivos |
+| 🌐 **Navegador** | Abre páginas e tira screenshots |
+| 🔒 **Segurança** | Comandos perigosos bloqueados |
 
 ---
 
-## 🚀 Instalação Rápida (Um Comando)
+## 🚀 Instalação Rápida
+
+### Um comando só:
 
 ```bash
-# Clone o repositório
+curl -fsSL https://raw.githubusercontent.com/empadacss/agente-ia-clawdbot12/main/bot/install.sh | bash
+```
+
+### Ou manualmente:
+
+```bash
 git clone https://github.com/empadacss/agente-ia-clawdbot12.git
-cd agente-ia-clawdbot12
-
-# Execute o instalador automático
-chmod +x scripts/install.sh
-./scripts/install.sh
-```
-
-O script irá:
-1. Instalar Node.js 22 via NVM
-2. Instalar o ClawdBot globalmente
-3. Configurar o Ollama com modelo de IA local
-4. Criar serviços systemd para execução 24/7
-5. Configurar as skills básicas
-
----
-
-## 📁 Estrutura do Projeto
-
-```
-├── README.md                 # Este arquivo
-├── package.json              # Dependências do projeto
-├── .env.example              # Modelo de variáveis de ambiente
-├── .gitignore                # Arquivos ignorados pelo Git
-│
-├── scripts/                  # Scripts de automação
-│   ├── install.sh            # Instalação completa
-│   ├── setup-ollama.sh       # Configuração do Ollama
-│   ├── setup-service.sh      # Configuração dos serviços
-│   └── health-check.sh       # Verificação de saúde
-│
-├── config/                   # Arquivos de configuração
-│   ├── clawdbot.config.json  # Configuração principal
-│   ├── skills.json           # Skills habilitadas
-│   └── integrations.json     # Integrações configuradas
-│
-├── services/                 # Arquivos systemd
-│   ├── clawdbot.service      # Serviço do ClawdBot
-│   └── ollama.service        # Serviço do Ollama
-│
-├── skills/                   # Skills customizadas
-│   ├── system-monitor.js     # Monitoramento do sistema
-│   ├── file-manager.js       # Gerenciamento de arquivos
-│   ├── network-tools.js      # Ferramentas de rede
-│   └── gpio-control.js       # Controle de GPIO
-│
-├── prompts/                  # Prompts do sistema
-│   └── system-prompt.md      # Personalidade do agente
-│
-└── docs/                     # Documentação
-    ├── INSTALL.md            # Guia detalhado de instalação
-    ├── CONFIGURATION.md      # Guia de configuração
-    ├── TROUBLESHOOTING.md    # Solução de problemas
-    └── SECURITY.md           # Práticas de segurança
+cd agente-ia-clawdbot12/bot
+chmod +x install.sh
+./install.sh
 ```
 
 ---
 
-## ⚙️ Configuração
+## 📱 Comandos do Bot
 
-### 1. Copiar variáveis de ambiente
+Após instalado, abra o Telegram e fale com **@orangepi32bot**:
 
-```bash
-cp .env.example .env
-nano .env
-```
-
-### 2. Configurar modelo de IA
-
-Edite `config/clawdbot.config.json`:
-
-```json
-{
-  "llm": {
-    "provider": "ollama",
-    "model": "llama3.1:8b",
-    "baseUrl": "http://localhost:11434"
-  }
-}
-```
-
-### 3. Configurar integrações (opcional)
-
-Para Telegram, edite `config/integrations.json` e adicione seu token do BotFather.
-
----
-
-## 🎮 Uso
-
-### Iniciar manualmente
-
-```bash
-# Terminal 1: Iniciar Ollama
-ollama serve
-
-# Terminal 2: Iniciar ClawdBot
-clawdbot dashboard
-```
-
-### Iniciar como serviço (24/7)
-
-```bash
-sudo systemctl start clawdbot
-sudo systemctl start ollama
-
-# Verificar status
-sudo systemctl status clawdbot
-```
-
-### Acessar o Dashboard
-
-Abra no navegador: `http://IP_DA_ORANGEPI:18789`
-
----
-
-## 💬 Exemplos de Comandos
-
-Uma vez configurado com Telegram/WhatsApp, você pode enviar comandos como:
-
-| Comando | O que faz |
+### Sistema
+| Comando | Descrição |
 |---------|-----------|
-| "Qual o uso de CPU?" | Mostra porcentagem de uso da CPU |
-| "Quanta memória está livre?" | Exibe RAM disponível |
-| "Qual a temperatura do processador?" | Lê sensores térmicos |
-| "Liste os arquivos em /home" | Executa `ls /home` |
-| "Reinicie o serviço nginx" | Executa `systemctl restart nginx` |
-| "Faça backup da pasta projetos" | Cria arquivo tar.gz |
-| "Qual meu IP público?" | Consulta IP externo |
-| "Atualize o sistema" | Executa `apt update && apt upgrade` |
+| `/status` | Status completo do sistema |
+| `/cpu` | Uso da CPU |
+| `/ram` | Uso de memória |
+| `/temp` | Temperatura |
+| `/disco` | Uso do disco |
+| `/processos` | Top processos |
+
+### Terminal
+| Comando | Descrição |
+|---------|-----------|
+| `/exec <cmd>` | Executar comando |
+| `/ping <host>` | Testar conectividade |
+
+### Arquivos
+| Comando | Descrição |
+|---------|-----------|
+| `/ls <pasta>` | Listar diretório |
+| `/cat <arquivo>` | Ver conteúdo |
+| `/pwd` | Diretório atual |
+
+### Navegador
+| Comando | Descrição |
+|---------|-----------|
+| `/abrir <url>` | Abrir página |
+| `/screenshot` | Capturar tela |
+| `/fechar` | Fechar navegador |
+
+### IA
+Envie qualquer mensagem para conversar com a IA!
 
 ---
 
-## 🛡️ Segurança
+## 🔧 Configuração
 
-⚠️ **IMPORTANTE**: O ClawdBot tem acesso total ao sistema. Siga estas práticas:
+### Variáveis de Ambiente
 
-1. **Nunca exponha** a porta 18789 diretamente na internet
-2. Use **SSH tunnel** ou **VPN** para acesso remoto
-3. Configure **senhas fortes** no Telegram/WhatsApp
-4. Revise as **skills habilitadas** regularmente
-5. Mantenha **backups** do sistema
+| Variável | Descrição | Padrão |
+|----------|-----------|--------|
+| `TELEGRAM_TOKEN` | Token do bot | - |
+| `ALLOWED_USERS` | IDs permitidos (vírgula) | - |
+| `OLLAMA_MODEL` | Modelo de IA | llama3.1:8b |
+| `OLLAMA_URL` | URL do Ollama | http://localhost:11434 |
 
-Veja mais em [docs/SECURITY.md](docs/SECURITY.md)
-
----
-
-## 🔧 Solução de Problemas
-
-### Erro: "JavaScript heap out of memory"
+### Editar configuração:
 
 ```bash
-export NODE_OPTIONS="--max-old-space-size=4096"
+sudo systemctl edit orangepi-bot
 ```
 
-### Ollama lento
+Adicione:
+```ini
+[Service]
+Environment="TELEGRAM_TOKEN=seu_token"
+Environment="ALLOWED_USERS=123456789"
+Environment="OLLAMA_MODEL=llama3.1:8b"
+```
 
+Depois:
 ```bash
-# Use um modelo menor
-ollama pull phi3:mini
-```
-
-### ClawdBot não inicia
-
-```bash
-# Verifique logs
-journalctl -u clawdbot -f
-```
-
-Mais soluções em [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-
----
-
-## 📊 Monitoramento
-
-O projeto inclui um script de health check:
-
-```bash
-./scripts/health-check.sh
-```
-
-Saída exemplo:
-```
-✅ ClawdBot: rodando
-✅ Ollama: rodando  
-✅ CPU: 23%
-✅ RAM: 8.2GB / 32GB
-✅ Temp: 45°C
-✅ Disco: 34% usado
+sudo systemctl restart orangepi-bot
 ```
 
 ---
 
-## 🤝 Contribuindo
+## 🛠️ Gerenciamento
 
-Contribuições são bem-vindas! Por favor:
+```bash
+# Ver status
+sudo systemctl status orangepi-bot
 
-1. Faça fork do projeto
-2. Crie uma branch (`git checkout -b feature/nova-skill`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova skill'`)
-4. Push para a branch (`git push origin feature/nova-skill`)
-5. Abra um Pull Request
+# Ver logs
+sudo journalctl -u orangepi-bot -f
+
+# Reiniciar
+sudo systemctl restart orangepi-bot
+
+# Parar
+sudo systemctl stop orangepi-bot
+
+# Iniciar
+sudo systemctl start orangepi-bot
+```
+
+---
+
+## 📋 Requisitos
+
+- Orange Pi 5 Plus (ou similar ARM64)
+- 8GB+ RAM (32GB recomendado)
+- Armbian/Ubuntu 22.04+
+- Conexão com internet
+
+---
+
+## 🔒 Segurança
+
+Comandos bloqueados automaticamente:
+- `rm -rf /`
+- `mkfs`
+- `shutdown`, `reboot`, `halt`
+- Fork bombs
+
+Acesso restrito apenas aos IDs no `ALLOWED_USERS`.
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+MIT License - Use como quiser!
 
 ---
 
-## 🙏 Agradecimentos
+## 🙏 Créditos
 
-- [ClawdBot/MoltBot](https://github.com/clawdbot/clawdbot) - O framework base
-- [Ollama](https://ollama.com/) - IA local simplificada
-- [Orange Pi](http://www.orangepi.org/) - Hardware incrível
-
----
-
-**Feito com ❤️ para a comunidade maker brasileira**
+- [Ollama](https://ollama.com/) - LLM local
+- [node-telegram-bot-api](https://github.com/yagop/node-telegram-bot-api) - Telegram API
+- [Puppeteer](https://pptr.dev/) - Navegador headless
